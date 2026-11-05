@@ -20,13 +20,25 @@ enum AirPlayVideoPolicy {
     /// the user, and inspect the full ladder before labels hide codec siblings.
     static func replacement(
         for requested: DashFormatInfo,
-        in formats: [DashFormatInfo]
+        in formats: [DashFormatInfo],
+        afterRejection: Bool = false
     ) -> DashFormatInfo? {
-        guard !isCompatible(requested) else {
+        if !afterRejection, isCompatible(requested) {
             return requested
         }
-        let compatible = formats.filter {
-            isCompatible($0) && ($0.height ?? 0) <= (requested.height ?? 1_080)
+        let maxHeight = requested.height ?? 1_080
+        let compatible = formats.filter { format in
+            guard isCompatible(format), let height = format.height, height <= maxHeight else {
+                return false
+            }
+            guard afterRejection else {
+                return true
+            }
+            // A 720p60 retry also failed on the reported video. Prefer a
+            // distinct, ordinary-frame-rate AVC stream for this one retry.
+            let fps = format.fps ?? 30
+            return format.itag != requested.itag && fps <= 30
+                && (!isCompatible(requested) || height < maxHeight || fps < (requested.fps ?? 30))
         }
         return compatible.max { left, right in
             if left.height != right.height {

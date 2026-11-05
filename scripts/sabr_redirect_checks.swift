@@ -147,6 +147,27 @@ extension SABRSegmentChecks {
                    "Stopped sessions finish without following another redirect")
     }
 
+    static func overlappingStartupRequests() throws {
+        let transport = SABRTestTransport()
+        transport.automatic = false
+        let loader = fetcher(transport, url: "https://r1.googlevideo.com/v")
+        var results: [Result<Data, Error>] = []
+        let opening = collector(1).request
+        loader.fetch(opening) { results.append($0) }
+        loader.fetch(opening) { results.append($0) }
+        try expect(transport.requests.count == 1, "Overlapping startup probes share their transfer")
+        transport.respond(0, Data())
+        try expect(results.count == 2 && results.allSatisfy { failed($0) },
+                   "Both probes receive the same upstream failure")
+        results.removeAll()
+        loader.fetch(opening) { results.append($0) }
+        loader.fetch(opening) { results.append($0) }
+        try expect(transport.requests.count == 2, "A failed opening can be retried")
+        transport.respond(1, segment(1, bytes: "video-start"))
+        try expect(results.count == 2 && results.allSatisfy { succeeded($0) == Data("video-start".utf8) },
+                   "Both probes receive the complete opening segment")
+    }
+
     static func throttleFailures() throws {
         let resolver = HLSStreamResolver()
         let url = URL(string: "https://r1.googlevideo.com/v?n=challenge")!

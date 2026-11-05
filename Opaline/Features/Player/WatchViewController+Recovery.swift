@@ -5,6 +5,7 @@ import UIKit
 
 extension WatchViewController {
     func resetPlaybackRecovery() {
+        airPlayHandoffState = AirPlayHandoffState()
         isRecoveringPlayback = false
         pendingRecoverySeek = false
         pendingResumeSeek = nil

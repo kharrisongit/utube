@@ -45,7 +45,17 @@ enum CheckError: Error { case failed(String) }
             try expect(AirPlayVideoPolicy.replacement(for: avc, in: formats)?.itag == expected,
                        "\(id): already-working 1080p remains unchanged")
             try expect(AirPlayVideoPolicy.isCompatible(avc), "\(id): supported AVC level/frame rate")
+            let retry = AirPlayVideoPolicy.replacement(for: avc, in: formats, afterRejection: true)
+            try expect(retry?.itag == 136, "\(id): retry 720p30 when compatible 1080p is rejected")
+            if let avc720p60 = formats.first(where: { $0.itag == 298 }) {
+                try expect(AirPlayVideoPolicy.replacement(for: avc720p60, in: formats, afterRejection: true)?.itag == 136,
+                           "Keep 720p and reduce frame rate when 720p60 is rejected")
+            }
+            try expect(AirPlayVideoPolicy.replacement(for: avc, in: [avc, av1], afterRejection: true) == nil,
+                       "No automatic retry with the rejected itag or AV1")
             let small = formats.first { $0.itag == 134 }!
+            try expect(AirPlayVideoPolicy.replacement(for: small, in: formats, afterRejection: true)?.itag == 133,
+                       "Never raise the chosen resolution during recovery")
             try expect(AirPlayVideoPolicy.replacement(for: small, in: formats)?.itag == 134,
                        "\(id): never raise a deliberately lower quality")
             let smallAV1 = formats.first { $0.itag == 396 }!

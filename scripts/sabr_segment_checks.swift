@@ -47,6 +47,7 @@ enum CheckError: Error { case failed(String) }
     }
 
     static func main() throws {
+        try overlappingStartupRequests()
         try redirects()
         try throttleFailures()
         let protection = collector(1)
