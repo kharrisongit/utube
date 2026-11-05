@@ -1,0 +1,30 @@
+name: Verify uTube PR 2 for iOS
+on:
+  push:
+    branches: [verify/pr-2-ios]
+    paths: [.github/workflows/verify-pr-2-ios.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  check-ios:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: b465fc0a7ae9262b41d767eefa4971a4e8598dcf
+          persist-credentials: false
+      - name: Check playback recovery
+        run: bash scripts/check_playback_recovery.sh
+      - name: Pin the release lint version
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/swiftlint.zip" https://github.com/realm/SwiftLint/releases/download/0.63.3/portable_swiftlint.zip
+          unzip -oq "$RUNNER_TEMP/swiftlint.zip" -d "$RUNNER_TEMP/swiftlint"
+          sudo install -m 755 "$RUNNER_TEMP/swiftlint/swiftlint" "$(brew --prefix)/bin/swiftlint"
+      - name: Compile release configuration for iOS
+        run: |
+          cp Config/Local.xcconfig.example Config/Local.xcconfig
+          xcodebuild -project Opaline.xcodeproj -scheme Opaline -sdk iphoneos \
+            -configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
