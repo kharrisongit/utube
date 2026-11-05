@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: b465fc0a7ae9262b41d767eefa4971a4e8598dcf
+          ref: 264ad6dbfcfb821b5a8ad66ccd67f969c82096bf
           persist-credentials: false
       - name: Check playback recovery
         run: bash scripts/check_playback_recovery.sh
