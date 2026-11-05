@@ -4,6 +4,7 @@ cd "$(dirname "$0")/.."
 RECOVERY_CHECK_DIR=$(mktemp -d)
 trap 'rm -rf "$RECOVERY_CHECK_DIR"' EXIT
 swiftc Opaline/Core/Playback/PlaybackFailure.swift \
+  Opaline/Core/Playback/PlaybackStallPolicy.swift \
   Opaline/Core/Playback/Verification/VerificationURLPolicy.swift \
   Opaline/Core/API/VisitorIdentityStore.swift \
   Opaline/Core/Services/PoToken/RemotePoTokenService.swift \

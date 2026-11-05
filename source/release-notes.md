@@ -1,4 +1,5 @@
-AirPlay playback on videos that stop at startup
+Playback recovery for videos that freeze mid-stream
 
-- When AirPlay rejects the automatically selected video format, uTube retries once with an available H.264 stream at up to 30 fps. It keeps your place and uses the existing AirPlay connection. Videos start at your usual quality, and you can still choose a quality yourself.
-- Playback reuses the audio and video setup data it has already downloaded. If the player asks for the first segment more than once while it is loading, those requests share a download.
+- If a streaming video stops advancing for 15 seconds, uTube can reopen the current stream once and resume at your place. This keeps the selected quality and the player used for Picture in Picture or AirPlay.
+- Open Stats for nerds while a video is buffering to see the player's waiting reason and how much video can play from your current position.
+- Share the debug log from Settings → Debug after a stall. It records the playback position, buffer, selected stream, network interface, audio route and available transfer statistics. Media error entries identify the server and format while omitting signed media URLs.

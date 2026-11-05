@@ -64,6 +64,7 @@ final class WatchViewController: UIViewController {
     var activeResourceLoader: AVAssetResourceLoaderDelegate?
     var statusObservation: NSKeyValueObservation?
     var airPlayHandoffState = AirPlayHandoffState()
+    let stallWatch = PlaybackStallWatch()
     var descriptionExpanded = false
     /// Raw (un-linkified) description text, kept so the attributed text can
     /// be rebuilt when the theme changes.
@@ -282,8 +283,6 @@ final class WatchViewController: UIViewController {
             videoPlayerView?.player?.pause()
         }
     }
-
-    // MARK: - Deinitializer
 
     deinit {
         NotificationCenter.default

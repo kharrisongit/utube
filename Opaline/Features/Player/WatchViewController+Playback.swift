@@ -55,7 +55,7 @@ extension WatchViewController {
         player.playImmediately(atRate: pv.playbackSpeed)
     }
 
-    private func attachToExistingPlayer(
+    func attachToExistingPlayer(
         player: AVPlayer,
         item: AVPlayerItem
     ) {
@@ -131,6 +131,9 @@ extension WatchViewController {
     }
 
     private func configurePlayerCallbacks(_ playerView: VideoPlayerView) {
+        playerView.onPlaybackStateChange = { [weak self] player in
+            self?.updateStallWatch(on: player)
+        }
         playerView.onCCTapped = { [weak self] in
             self?.showSubtitlePicker()
         }
@@ -154,6 +157,7 @@ extension WatchViewController {
     ) {
         sponsorBlock.attach(to: playerView)
         playerView.onTimeUpdate = { [weak self] time in
+            self?.noteStallRecoveryProgress(at: time)
             if self?.pendingRecoverySeek == false {
                 self?.lastPlaybackPosition = time
             }

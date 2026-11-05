@@ -160,6 +160,10 @@ extension VideoPlayerView {
     }
 
     private func handleTimeControlChange(on player: AVPlayer) {
+        guard self.player === player else {
+            return
+        }
+        onPlaybackStateChange?(player)
         switch player.timeControlStatus {
         case .waitingToPlayAtSpecifiedRate:
             logPlaybackState("waiting for playback")

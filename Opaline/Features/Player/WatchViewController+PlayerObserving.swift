@@ -32,6 +32,12 @@ extension WatchViewController {
         )
         nc.addObserver(
             self,
+            selector: #selector(playerItemDidStall(_:)),
+            name: .AVPlayerItemPlaybackStalled,
+            object: item
+        )
+        nc.addObserver(
+            self,
             selector: #selector(playerItemDidPlayToEnd(_:)),
             name: .AVPlayerItemDidPlayToEndTime,
             object: item
@@ -52,6 +58,7 @@ extension WatchViewController {
             name: .AVPlayerItemNewErrorLogEntry,
             object: item
         )
+        nc.removeObserver(self, name: .AVPlayerItemPlaybackStalled, object: item)
         nc.removeObserver(
             self,
             name: .AVPlayerItemDidPlayToEndTime,
@@ -135,8 +142,7 @@ extension WatchViewController {
 
     func logPlaybackFailure(_ item: AVPlayerItem) {
         let nsError = item.error as NSError?
-        let desc = item.error?.localizedDescription
-            ?? "unknown"
+        let desc = playbackErrorText(item.error?.localizedDescription)
         let domain = nsError?.domain ?? "nil"
         let code = nsError?.code ?? 0
         AppLog.player(
@@ -171,7 +177,7 @@ extension WatchViewController {
             "underlying error:"
                 + " \(underlying.domain)"
                 + " code=\(underlying.code)"
-                + " \(underlying.localizedDescription)"
+                + " \(playbackErrorText(underlying.localizedDescription))"
         )
     }
 
@@ -183,7 +189,7 @@ extension WatchViewController {
             AVPlayerItemFailedToPlayToEndTimeErrorKey
         let error = note.userInfo?[errorKey] as? NSError
         AppLog.player(
-            "player item failed to end: \(error?.localizedDescription ?? "unknown")"
+            "player item failed to end: \(playbackErrorText(error?.localizedDescription))"
         )
         if let item = note.object as? AVPlayerItem,
            handleAirPlayRejection(error ?? (item.error as NSError?), item: item) {
@@ -209,16 +215,11 @@ extension WatchViewController {
             )
             return
         }
-        let domain = last.errorDomain
-        let comment = last.errorComment ?? "nil"
-        let uri = last.uri ?? "nil"
         AppLog.player(
-            "player error log:"
-                + " domain=\(domain),"
-                + " code=\(last.errorStatusCode),"
-                + " comment=\(comment),"
-                + " uri=\(uri)"
+            "player error log: domain=\(last.errorDomain) code=\(last.errorStatusCode)"
+                + " comment=\(playbackErrorText(last.errorComment)) \(mediaEndpoint(last.uri))"
         )
+        logPlaybackStall("media error", item: item)
         if last.errorStatusCode == 403 {
             hasSeenPlaybackError = true
             if !isRecoveringPlayback {
