@@ -28,10 +28,6 @@ final class PlaybackNetworkPath {
         monitor.start(queue: .main)
     }
 
-    deinit {
-        monitor.cancel()
-    }
-
     private func statusLabel(_ status: NWPath.Status) -> String {
         switch status {
         case .satisfied:
@@ -43,5 +39,9 @@ final class PlaybackNetworkPath {
         @unknown default:
             return "unknown"
         }
+    }
+
+    deinit {
+        monitor.cancel()
     }
 }
