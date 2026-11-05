@@ -105,10 +105,7 @@ extension VideoPlayerView {
         guard let player else {
             return
         }
-        let interval = CMTime(
-            seconds: 0.1,
-            preferredTimescale: 600
-        )
+        let interval = CMTime(seconds: 0.1, preferredTimescale: 600)
         timeObserver = player.addPeriodicTimeObserver(
             forInterval: interval,
             queue: .main
@@ -160,6 +157,10 @@ extension VideoPlayerView {
     }
 
     private func handleTimeControlChange(on player: AVPlayer) {
+        guard self.player === player else {
+            return
+        }
+        onPlaybackStateChange?(player)
         switch player.timeControlStatus {
         case .waitingToPlayAtSpecifiedRate:
             logPlaybackState("waiting for playback")

@@ -67,6 +67,10 @@ extension WatchViewController {
         rows.append(row("Connection Speed", speedValue(item)))
         rows.append(row("Network Activity", transferredValue(item)))
         rows.append(row("Buffer Health", bufferValue(item)))
+        if let player = videoPlayerView?.player,
+           player.timeControlStatus == .waitingToPlayAtSpecifiedRate {
+            rows.append(row("Waiting for", waitDescription(player)))
+        }
         return rows.joined(separator: "\n")
     }
 
@@ -121,15 +125,20 @@ extension WatchViewController {
         guard let item else {
             return "?"
         }
-        let now = CMTimeGetSeconds(item.currentTime())
-        let bufferedEnd = item.loadedTimeRanges
-            .map { $0.timeRangeValue }
-            .map { CMTimeGetSeconds($0.start) + CMTimeGetSeconds($0.duration) }
-            .filter { $0 >= now }
-            .max()
-        guard let bufferedEnd else {
-            return "0.0 s"
+        let seconds = bufferedAhead(item, at: item.currentTime())
+        return seconds.isFinite ? String(format: "%.1f s", seconds) : "?"
+    }
+
+    private func waitDescription(_ player: AVPlayer) -> String {
+        switch player.reasonForWaitingToPlay {
+        case .evaluatingBufferingRate:
+            return "Measuring download speed"
+        case .toMinimizeStalls:
+            return "Buffering media"
+        case .noItemToPlay:
+            return "Loading the stream"
+        default:
+            return "Playback to resume"
         }
-        return String(format: "%.1f s", bufferedEnd - now)
     }
 }

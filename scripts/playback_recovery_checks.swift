@@ -38,7 +38,20 @@ enum CheckError: Error { case failed(String) }
     }
     static func main() throws {
         try classification(); try cooldown(); try tokenCache(); try identity(); try navigation()
+        try stalls()
         print("Passed \(count) playback recovery checks")
+    }
+    static func stalls() throws {
+        typealias Policy = PlaybackStallPolicy
+        try expect(Policy.isStuck(from: 795, to: 795.49), "A stalled playhead can drift slightly")
+        try expect(!Policy.isStuck(from: 795, to: 795.5), "Half a second of progress cancels recovery")
+        try expect(!Policy.isStuck(from: 795, to: 794.5), "A backward seek cancels recovery")
+        try expect(!Policy.isStuck(from: .nan, to: 10) && !Policy.isStuck(from: 10, to: .infinity), "Ignore invalid playheads")
+        try expect(Policy.canRestart(at: 795, duration: 2204), "Allow recovery during the stalled video")
+        try expect(Policy.canRestart(at: 1, duration: 2), "Include both one-second boundaries")
+        try expect(!Policy.canRestart(at: 0.99, duration: 2), "Do not restart during initial buffering")
+        try expect(!Policy.canRestart(at: 1.01, duration: 2), "Do not restart at the end")
+        try expect(!Policy.canRestart(at: .nan, duration: 10) && !Policy.canRestart(at: 10, duration: .infinity), "Require a finite timeline")
     }
     static func classification() throws {
         let message = "Sign in to confirm you’re not a bot"

@@ -30,10 +30,10 @@ final class VideoPlayerView: UIView {
     }
 
     var onTimeUpdate: ((Double) -> Void)?
+    var onPlaybackStateChange: ((AVPlayer) -> Void)?
     var onSkipTapped: (() -> Void)?
     var onNeedsFreshPlayer: (() -> Void)?, onAirPlayRouteChange: (() -> Void)?
-    var onPrevious: (() -> Void)?
-    var onNext: (() -> Void)?
+    var onPrevious: (() -> Void)?, onNext: (() -> Void)?
 
     /// End screen: the centre controls become Previous / Replay / Next.
     /// Set when a video ends without anything playing after it; cleared as
