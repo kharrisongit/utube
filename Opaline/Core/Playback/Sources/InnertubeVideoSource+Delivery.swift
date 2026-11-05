@@ -32,19 +32,23 @@ extension InnertubeVideoSource {
         )
         delivery = stream
         let started = CACurrentMediaTime()
-        stream.prepare(request) { result in
-            let elapsed = (CACurrentMediaTime() - started) * 1_000
-            switch result {
-            case .success:
-                AppLog.player(String(
-                    format: "delivery %@ ready in %.0f ms", stream.label, elapsed
-                ))
-            case .failure(let error):
-                AppLog.player(
-                    "delivery \(stream.label) failed (\(error.localizedDescription))"
-                )
+        stream.prepare(request) { [weak self] result in
+            DispatchQueue.main.async {
+                // A manual selection can supersede an automatic AirPlay retry mid-build.
+                guard self?.delivery === stream else {
+                    return
+                }
+                let elapsed = (CACurrentMediaTime() - started) * 1_000
+                switch result {
+                case .success:
+                    AppLog.player(String(
+                        format: "delivery %@ ready in %.0f ms", stream.label, elapsed
+                    ))
+                case .failure(let error):
+                    AppLog.player("\(stream.label) delivery failed: \(error.localizedDescription)")
+                }
+                completion(result)
             }
-            completion(result)
         }
     }
 }

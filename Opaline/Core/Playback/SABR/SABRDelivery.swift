@@ -23,6 +23,7 @@ final class SABRDelivery: StreamDelivery {
     struct Track {
         let format: DashFormatInfo
         let segments: [SidxSegment]
+        let initialization: Data
         let path: String
     }
 
@@ -122,7 +123,6 @@ final class SABRDelivery: StreamDelivery {
     private static func initRequests(for request: DeliveryRequest) -> [SABRSegmentRequest] {
         let audio = formatInfo(request.audio)
         let video = formatInfo(request.video)
-        let audioEnd = request.info.dashAudioFormat?.indexRangeEnd ?? 0
         let startMs = Int((request.resumeAt ?? 0) * 1_000)
         return [
             SABRSegmentRequest(
@@ -137,7 +137,7 @@ final class SABRDelivery: StreamDelivery {
                 other: video,
                 sequence: 1,
                 timeMs: startMs,
-                initRange: audioEnd + 1
+                initRange: request.audio.indexRangeEnd + 1
             )
         ]
     }

@@ -63,7 +63,7 @@ final class WatchViewController: UIViewController {
     /// e.g. a source's HLS proxy.
     var activeResourceLoader: AVAssetResourceLoaderDelegate?
     var statusObservation: NSKeyValueObservation?
-    let airPlayHandoffState = AirPlayHandoffState()
+    var airPlayHandoffState = AirPlayHandoffState()
     var descriptionExpanded = false
     /// Raw (un-linkified) description text, kept so the attributed text can
     /// be rebuilt when the theme changes.

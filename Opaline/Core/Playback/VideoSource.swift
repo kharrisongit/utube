@@ -76,8 +76,6 @@ protocol VideoSource: AnyObject {
     var availableQualities: [VideoQuality] { get }
     /// The active quality, if any.
     var currentQuality: VideoQuality? { get }
-    /// A compatible replacement when the current video cannot be sent as-is.
-    var airPlayQuality: VideoQuality? { get }
     /// Active codec/itag pair for the stats overlay, when the source knows it.
     var currentCodecs: String? { get }
     /// Whether this source can list dubs at all — asked before a video is
@@ -89,6 +87,9 @@ protocol VideoSource: AnyObject {
     var availableAudioTracks: [AudioTrack] { get }
     /// The active audio track, if the source knows it.
     var currentAudioTrack: AudioTrack? { get }
+
+    /// An AirPlay-compatible choice for handoff, or a simpler alternate after a receiver rejection.
+    func airPlayQuality(afterRejection: Bool) -> VideoQuality?
 
     /// Resolves the video and produces a ready-to-play result.
     func loadPlayback(
@@ -142,7 +143,6 @@ protocol VideoSource: AnyObject {
 }
 
 extension VideoSource {
-    var airPlayQuality: VideoQuality? { nil }
     var currentCodecs: String? { nil }
     var listsAudioTracks: Bool { false }
 
@@ -151,6 +151,8 @@ extension VideoSource {
     var supportsAudioTrackSelection: Bool { availableAudioTracks.count > 1 }
     var availableAudioTracks: [AudioTrack] { [] }
     var currentAudioTrack: AudioTrack? { nil }
+
+    func airPlayQuality(afterRejection: Bool) -> VideoQuality? { nil }
 
     /// Convenience for callers with no playhead to offer.
     func selectQuality(

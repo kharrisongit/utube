@@ -31,7 +31,6 @@ final class FallbackChainSource: VideoSource {
     var supportsQualitySelection: Bool { active?.supportsQualitySelection ?? false }
     var availableQualities: [VideoQuality] { active?.availableQualities ?? [] }
     var currentQuality: VideoQuality? { active?.currentQuality }
-    var airPlayQuality: VideoQuality? { active?.airPlayQuality }
     var currentCodecs: String? { active?.currentCodecs }
     var availableAudioTracks: [AudioTrack] { active?.availableAudioTracks ?? [] }
     var currentAudioTrack: AudioTrack? { active?.currentAudioTrack }
@@ -39,6 +38,10 @@ final class FallbackChainSource: VideoSource {
     init(steps: [PlaybackStep], apiClient: WatchService) {
         self.steps = steps
         self.apiClient = apiClient
+    }
+
+    func airPlayQuality(afterRejection: Bool) -> VideoQuality? {
+        active?.airPlayQuality(afterRejection: afterRejection)
     }
 
     func loadPlayback(

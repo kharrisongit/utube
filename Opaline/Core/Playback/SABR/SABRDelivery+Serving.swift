@@ -94,6 +94,10 @@ extension SABRDelivery {
         route: Route,
         completion: @escaping (Data?, String) -> Void
     ) {
+        if name == "init" {
+            completion(track.initialization, "video/mp4")
+            return
+        }
         guard let request = segmentRequest(name, of: track, route: route) else {
             completion(nil, "")
             return
@@ -124,16 +128,6 @@ extension SABRDelivery {
             return nil
         }
         let format = SABRDelivery.formatInfo(track.format)
-        if name == "init" {
-            // Everything before the first media byte: ftyp, moov and sidx.
-            return SABRSegmentRequest(
-                format: format,
-                other: other,
-                sequence: 1,
-                timeMs: 0,
-                initRange: track.format.indexRangeEnd + 1
-            )
-        }
         guard let index = Int(name), index >= 0, index < track.segments.count else {
             return nil
         }
@@ -194,8 +188,8 @@ extension SABRDelivery {
             return nil
         }
         return [
-            Track(format: video, segments: videoSegments, path: "video"),
-            Track(format: audio, segments: audioSegments, path: "audio")
+            Track(format: video, segments: videoSegments, initialization: videoInit, path: "video"),
+            Track(format: audio, segments: audioSegments, initialization: audioInit, path: "audio")
         ]
     }
 

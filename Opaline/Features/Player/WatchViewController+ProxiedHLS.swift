@@ -91,9 +91,14 @@ extension WatchViewController {
         _ quality: VideoQuality,
         source: VideoSource
     ) {
-        guard quality != source.currentQuality else {
+        // An explicit pick supersedes an in-flight automatic handoff, even
+        // when the old item is still labeled with the requested quality.
+        airPlayHandoffState.canRetryRejectedQuality = false
+        guard quality != source.currentQuality || airPlayHandoffState.pending != nil
+            || videoPlayerView?.player?.currentItem?.status == .failed else {
             return
         }
+        airPlayHandoffState.pending = nil
         let resumeTime = rebuildPlayhead
         playerStatusLabel.text = "player.status.loading"
             .localized(with: quality.label)

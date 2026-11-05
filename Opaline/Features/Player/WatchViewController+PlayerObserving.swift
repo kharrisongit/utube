@@ -145,6 +145,9 @@ extension WatchViewController {
                 + " code=\(code)"
         )
         logUnderlyingError(nsError)
+        if handleAirPlayRejection(nsError, item: item) {
+            return
+        }
         if code == -12_660
             || domain == "CoreMediaErrorDomain" {
             hasSeenPlaybackError = true
@@ -178,12 +181,14 @@ extension WatchViewController {
     ) {
         let errorKey =
             AVPlayerItemFailedToPlayToEndTimeErrorKey
-        let error =
-            (note.userInfo?[errorKey] as? Error)?
-                .localizedDescription ?? "unknown"
+        let error = note.userInfo?[errorKey] as? NSError
         AppLog.player(
-            "player item failed to end: \(error)"
+            "player item failed to end: \(error?.localizedDescription ?? "unknown")"
         )
+        if let item = note.object as? AVPlayerItem,
+           handleAirPlayRejection(error ?? (item.error as NSError?), item: item) {
+            return
+        }
         hasSeenPlaybackError = true
         if !isRecoveringPlayback {
             recoverPlayback()
@@ -227,10 +232,15 @@ extension WatchViewController {
 
     func showPlaybackError(_ message: String) {
         DispatchQueue.main.async { [weak self] in
-            self?.playerSpinner.stopAnimating()
-            self?.playerStatusLabel.text =
+            guard let self else {
+                return
+            }
+            playerSpinner.stopAnimating()
+            playerStatusLabel.isHidden = false
+            playerContainer.bringSubviewToFront(playerStatusLabel)
+            playerStatusLabel.text =
                 "player.error.withMessage".localized(with: message)
-            self?.playerStatusLabel.textColor =
+            playerStatusLabel.textColor =
                 .systemRed
         }
     }

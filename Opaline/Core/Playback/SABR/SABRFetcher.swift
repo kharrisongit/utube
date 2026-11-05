@@ -42,6 +42,9 @@ final class SABRFetcher {
     private var backoffUntil = Date.distantPast
     private var requestNumber = 0
     private var stopped = false
+    /// A fetcher serves one fixed pair of tracks. AirPlay can make several
+    /// overlapping probes for the first media segment of either track.
+    private var openingRequests: [Int: [(Result<Data, Error>) -> Void]] = [:]
 
     init(
         transport: HTTPTransport,
@@ -67,7 +70,25 @@ final class SABRFetcher {
         _ request: SABRSegmentRequest,
         completion: @escaping (Result<Data, Error>) -> Void
     ) {
-        fetch(Attempt(request: request), completion: completion)
+        let attempt = Attempt(request: request)
+        guard !request.isInit, request.sequence == 1 else {
+            fetch(attempt, completion: completion)
+            return
+        }
+        let itag = request.format.itag
+        lock.lock()
+        let alreadyFetching = openingRequests[itag] != nil
+        openingRequests[itag, default: []].append(completion)
+        lock.unlock()
+        guard !alreadyFetching else {
+            return
+        }
+        fetch(attempt) { result in
+            self.lock.lock()
+            let waiting = self.openingRequests.removeValue(forKey: itag) ?? []
+            self.lock.unlock()
+            waiting.forEach { $0(result) }
+        }
     }
 
     private func fetch(
