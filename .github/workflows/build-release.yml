@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - "source/**"
       - ".github/workflows/last-dragonrider.yml"
+      - ".github/workflows/guided-assistance.yml"
       - "**.md"
   workflow_dispatch:
 
