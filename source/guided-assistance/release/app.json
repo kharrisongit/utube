@@ -1,0 +1,16 @@
+{
+  "name": "Guided Assistance",
+  "bundleIdentifier": "com.kharrison.guidedassistance",
+  "developerName": "kharrison",
+  "subtitle": "Your private document assistant",
+  "localizedDescription": "Build a private knowledge base from your own PDFs, text files, and Markdown. Browse reusable request guides, capture dated updates with revision history, and ask optional on-device AI for answers with source passages. Your documents remain in local device storage. The app starts empty and does not include work documents. Local chat uses an optional approximately 3 GB Qwen3.5 4B model download; model speed and memory use vary by device. Search and guides work without the model. Includes device authentication and passphrase-encrypted exports for manual transfer. For AltStore Classic on iPhone and iPad with iOS 18 or newer.",
+  "iconURL": "https://raw.githubusercontent.com/kharrisongit/utube/main/source/guided-assistance/Assets.xcassets/AppIcon.appiconset/icon-1024.png",
+  "tintColor": "4766E6",
+  "category": "productivity",
+  "minOSVersion": "18.0",
+  "screenshots": [],
+  "appPermissions": {
+    "entitlements": ["application-identifier", "com.apple.developer.team-identifier", "get-task-allow"],
+    "privacy": {"NSFaceIDUsageDescription": "Unlock your private document knowledge base."}
+  }
+}
