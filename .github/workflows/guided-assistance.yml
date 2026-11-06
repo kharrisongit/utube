@@ -44,7 +44,7 @@ jobs:
         run: swift test
   build:
     needs: prepare
-    runs-on: macos-15-intel
+    runs-on: macos-26-intel
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
@@ -52,9 +52,16 @@ jobs:
           fetch-depth: 0
       - name: Select Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+          sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
           xcodebuild -version
           swift --version
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            source/guided-assistance/build/Packages
+            source/guided-assistance/build/DerivedData
+          key: guided-native-xcode266-${{ github.run_id }}
+          restore-keys: guided-native-xcode266-
       - name: Choose app version
         id: release
         shell: bash
@@ -110,6 +117,13 @@ jobs:
           git add source/apps.json
           git commit -m "Publish Guided Assistance $VERSION in AltStore [skip ci]"
           git push origin HEAD:main
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: |
+            source/guided-assistance/build/Packages
+            source/guided-assistance/build/DerivedData
+          key: guided-native-xcode266-${{ github.run_id }}
       - name: Save build artifacts
         if: always()
         uses: actions/upload-artifact@v4

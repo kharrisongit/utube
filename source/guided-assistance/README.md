@@ -24,7 +24,7 @@ The optional AI model is downloaded separately from Settings. The app starts emp
 
 ## Build from source
 
-1. On an Apple Silicon Mac, install Xcode 26 or newer with Swift 6.2 or newer. Use Xcode 27 or newer for an iPhone running iOS 27.
+1. On an Apple Silicon Mac, install Xcode 26.6 or newer with Swift 6.3 or newer. Use Xcode 27 or newer for an iPhone running iOS 27.
 2. Open `GuidedAssistance.xcodeproj`. Allow Xcode to resolve the Swift packages.
 3. Select **GuidedAssistance-Mac** and **My Mac** to build the desktop app. Deployment minimum: macOS 15.
 4. For the phone, select **GuidedAssistance-iOS**, connect the iPhone, and select it as the run destination. Deployment minimum: iOS 18. In Signing & Capabilities, select your development team and give the bundle identifier a unique value if needed.
