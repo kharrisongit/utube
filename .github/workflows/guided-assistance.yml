@@ -138,12 +138,15 @@ jobs:
           GUIDED_VERSION: ${{ steps.release.outputs.version }}
           GUIDED_BUILD: ${{ github.run_number }}
         run: bash source/guided-assistance/build.sh
-      - name: Verify native app in iPhone simulator
+      - name: Compile iPhone simulator app
         if: steps.verified.outputs.ready != 'true'
         env:
           GUIDED_VERSION: ${{ steps.release.outputs.version }}
           GUIDED_BUILD: ${{ github.run_number }}
-        run: bash source/guided-assistance/smoke.sh
+        run: bash source/guided-assistance/build.sh simulator
+      - name: Verify native app in iPhone simulator
+        if: steps.verified.outputs.ready != 'true'
+        run: bash source/guided-assistance/smoke.sh --skip-build
       - name: Check shared Mac app target
         if: steps.verified.outputs.ready != 'true'
         working-directory: source/guided-assistance

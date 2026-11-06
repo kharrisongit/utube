@@ -1,10 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 cd "$(dirname "$0")"
-bash build.sh simulator
-DEVICE=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(v["udid"] for devices in d["devices"].values() for v in devices if v["name"].startswith("iPhone")))')
+if [ "${1:-}" != --skip-build ]; then bash build.sh simulator; fi
+DEVICE=$(xcrun simctl list devices available -j | python3 -c 'import json,re,sys; d=json.load(sys.stdin)["devices"]; runtimes=sorted(d,key=lambda value:tuple(map(int,re.findall(r"\d+",value))),reverse=True); print(next(v["udid"] for runtime in runtimes for v in d[runtime] if v.get("isAvailable") and v["name"].startswith("iPhone")))')
 xcrun simctl boot "$DEVICE" || true
-xcrun simctl bootstatus "$DEVICE" -b
+python3 - "$DEVICE" <<'PY'
+import subprocess,sys
+try:
+    subprocess.run(['xcrun','simctl','bootstatus',sys.argv[1],'-b'],check=True,timeout=180)
+except subprocess.TimeoutExpired:
+    subprocess.run(['xcrun','simctl','list','devices','available'],check=False)
+    raise SystemExit('The simulator did not boot within three minutes.')
+PY
 xcrun simctl install "$DEVICE" 'build/simulator/Guided Assistance.app'
 xcrun simctl launch "$DEVICE" com.kharrison.guidedassistance --smoke-test
 DATA=$(xcrun simctl get_app_container "$DEVICE" com.kharrison.guidedassistance data)
