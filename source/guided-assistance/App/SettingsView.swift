@@ -54,7 +54,7 @@ struct SettingsView: View {
             }
             Section("Using your references") {
                 Text("Confirm updates after reviewing them. Add effective dates and source names. Keep source documents current, and check the cited passage before relying on generated advice.")
-                Text("PDF, UTF-8 text, and Markdown imports are supported. This preview extracts PDF text; scanned pages need OCR before import.").font(.caption).foregroundStyle(.secondary)
+                Text("PDF, UTF-8 text, and Markdown imports are supported. PDF imports use selectable text; scanned pages need OCR before import.").font(.caption).foregroundStyle(.secondary)
             }
             if !message.isEmpty { Section { Text(message).foregroundStyle(.secondary) } }
         }.formStyle(.grouped).navigationTitle("Settings")

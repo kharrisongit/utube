@@ -31,7 +31,8 @@ actor LocalAI {
         if model == nil {
             Memory.cacheLimit = 20 * 1024 * 1024
             // Local-directory loader has no downloader and cannot fetch a model from the network.
-            model = try await loadModelContainer(from: modelURL, using: LocalTokenizerLoader())
+            // Reference the Qwen3.5 factory directly so Release linking retains its registration.
+            model = try await VLMModelFactory.shared.loadContainer(from: modelURL, using: LocalTokenizerLoader())
         }
         guard let model else { throw KnowledgeError.modelUnavailable }
         let session = ChatSession(model, instructions: AnswerPrompt.instructions,

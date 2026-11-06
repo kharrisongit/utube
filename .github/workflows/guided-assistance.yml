@@ -55,6 +55,8 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
           xcodebuild -version
           swift --version
+          xcodebuild -downloadComponent MetalToolchain
+          xcrun metal --version
       - uses: actions/cache/restore@v4
         with:
           path: |
