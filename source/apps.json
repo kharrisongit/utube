@@ -410,9 +410,56 @@
       "versionDescription": "Fixes unchanged revision suggestions and adds two free on-device writing models.\n\n- Gives your exact requested change priority, including changes to a character’s emotions, reactions, and actions.\n- Retries once if the model copies the original passage. If it still makes no changes, reports the problem instead of saying the suggestion is ready.\n- Keeps rejected unchanged answers out of the suggestion and prevents applying unchanged saved revisions.\n- Adds SmolLM3 3B (about 1.8 GB download; requires 8 GB device memory) and Qwen 3 4B Instruct (about 2.3 GB; requires 12 GB device memory) to Manage Models on iPhone and iPad. Both run locally without an account or usage fees after download.\n- Retains the recent iPhone safe-area and pinch-zoom fixes.",
       "downloadURL": "https://github.com/kharrisongit/Quill/releases/download/quill-1.0.18/Quill.ipa",
       "size": 6790084
+    },
+    {
+      "name": "Guided Assistance",
+      "bundleIdentifier": "com.kharrison.guidedassistance",
+      "developerName": "kharrison",
+      "subtitle": "Your private document assistant",
+      "localizedDescription": "Build a private knowledge base from your own PDFs, text files, and Markdown. Browse reusable request guides, capture dated updates with revision history, and ask optional on-device AI for answers with source passages. Your documents remain in local device storage. The app starts empty and does not include work documents. Local chat uses an optional approximately 3 GB Qwen3.5 4B model download; model speed and memory use vary by device. Search and guides work without the model. Includes device authentication and passphrase-encrypted exports for manual transfer. For AltStore Classic on iPhone and iPad with iOS 18 or newer.",
+      "iconURL": "https://github.com/kharrisongit/utube/releases/download/guided-1.0.0/guided-assistance-icon.png",
+      "tintColor": "4766E6",
+      "category": "productivity",
+      "minOSVersion": "18.0",
+      "screenshots": [],
+      "appPermissions": {
+        "entitlements": [
+          "application-identifier",
+          "com.apple.developer.team-identifier",
+          "get-task-allow"
+        ],
+        "privacy": {
+          "NSFaceIDUsageDescription": "Unlock your private document knowledge base."
+        }
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-11-06T21:20:40Z",
+          "localizedDescription": "Guided Assistance 1.0.0\n\n- A native document knowledge assistant for iPhone and iPad, installable through AltStore Classic.\n- Import your own searchable PDFs, text, and Markdown. Browse passages and open original PDFs.\n- Create request guides with checklists, steps, suggested wording, and references.\n- Add new facts and procedure updates with effective dates, review status, and revision history.\n- Optional on-device AI chat with source citations and an explicit approximately 3 GB model download. No cloud AI fallback.\n- Optional device authentication and encrypted exports for manual backup or transfer.\n\nThe app starts empty; your documents are not part of the repository or app download. Local AI performance still depends on your physical device's memory and must be evaluated there. The first release does not OCR image-only PDFs or automatically synchronize knowledge between devices.",
+          "downloadURL": "https://github.com/kharrisongit/utube/releases/download/guided-1.0.0/GuidedAssistance.ipa",
+          "size": 10843835,
+          "minOSVersion": "18.0",
+          "buildVersion": "10"
+        }
+      ],
+      "version": "1.0.0",
+      "versionDate": "2026-11-06T21:20:40Z",
+      "versionDescription": "Guided Assistance 1.0.0\n\n- A native document knowledge assistant for iPhone and iPad, installable through AltStore Classic.\n- Import your own searchable PDFs, text, and Markdown. Browse passages and open original PDFs.\n- Create request guides with checklists, steps, suggested wording, and references.\n- Add new facts and procedure updates with effective dates, review status, and revision history.\n- Optional on-device AI chat with source citations and an explicit approximately 3 GB model download. No cloud AI fallback.\n- Optional device authentication and encrypted exports for manual backup or transfer.\n\nThe app starts empty; your documents are not part of the repository or app download. Local AI performance still depends on your physical device's memory and must be evaluated there. The first release does not OCR image-only PDFs or automatically synchronize knowledge between devices.",
+      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/guided-1.0.0/GuidedAssistance.ipa",
+      "size": 10843835
     }
   ],
   "news": [
+    {
+      "title": "Guided Assistance 1.0.0",
+      "identifier": "com.kharrison.guidedassistance.release-1.0.0",
+      "caption": "A native document knowledge assistant for iPhone and iPad, installable through AltStore Classic.",
+      "date": "2026-11-06T21:20:40Z",
+      "tintColor": "4766E6",
+      "appID": "com.kharrison.guidedassistance",
+      "url": "https://github.com/kharrisongit/utube/releases/tag/guided-1.0.0"
+    },
     {
       "title": "uTube 1.12.17 — kharrison",
       "identifier": "com.kharrison.utube.release-1.12.17",
