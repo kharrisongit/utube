@@ -14,8 +14,8 @@ final class LibraryStore {
     let root: URL
     private(set) var searchIndex = KnowledgeSearch(library: KnowledgeLibrary())
 
-    init() {
-        root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    init(rootURL: URL? = nil) {
+        root = rootURL ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("GuidedAssistance", isDirectory: true)
         do {
             try Self.prepareDirectory(root)

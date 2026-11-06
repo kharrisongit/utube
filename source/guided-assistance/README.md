@@ -2,7 +2,7 @@
 
 A native iPhone and Mac document knowledge assistant. Bring your own references, create reusable request guides, capture changes, and ask an optional on-device model for answers with source passages.
 
-**Status: initial release.** The release workflow runs core tests, builds an AltStore IPA, verifies the app in the iPhone simulator, and compiles the Mac target before publishing. Physical-device AI performance and final AltStore installation still require device confirmation.
+**Status: initial release.** The release workflow runs core tests, verifies native document storage and encrypted backups, builds an AltStore IPA, and compiles the Mac target before publishing. Simulator startup was unreliable on the hosted runner; UI behavior, physical-device AI performance, and final AltStore installation still require device confirmation.
 
 ## What is included
 
@@ -68,6 +68,6 @@ xcodebuild -project GuidedAssistance.xcodeproj -scheme GuidedAssistance-Mac -des
 xcodebuild -project GuidedAssistance.xcodeproj -scheme GuidedAssistance-iOS -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
 ```
 
-The shared repository workflow `.github/workflows/guided-assistance.yml` packages the IPA and publishes it to the existing kharrison Apps source only after checks pass. It never downloads the AI model or imports user documents. Simulator fixtures are fictional and excluded from physical-device builds.
+The shared repository workflow `.github/workflows/guided-assistance.yml` packages the IPA and publishes it to the existing kharrison Apps source only after checks pass. It never downloads the AI model or imports user documents. Native storage checks use a temporary directory and fictional fixtures, which are excluded from installable app builds. Run `bash scripts/check_storage.sh` on a Mac to exercise storage without a simulator; `bash smoke.sh` additionally checks simulator launch and captures the UI when a simulator is available.
 
 See [architecture](docs/ARCHITECTURE.md), [device checks](docs/DEVICE_CHECKS.md), and [third-party notices](THIRD_PARTY_NOTICES.md). An open-source license for the original app code has not been selected yet.

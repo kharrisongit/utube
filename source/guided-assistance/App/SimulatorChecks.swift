@@ -1,5 +1,5 @@
-// Compiled only for the simulator; never included in the installable iPhone app.
-#if targetEnvironment(simulator)
+// Test-only storage checks; excluded from installable iPhone and Mac apps.
+#if targetEnvironment(simulator) || GUIDED_STORAGE_CHECKS
 import Foundation
 
 enum SimulatorChecks {

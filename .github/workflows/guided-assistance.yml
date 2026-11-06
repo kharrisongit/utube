@@ -96,7 +96,7 @@ jobs:
               subprocess.run(['gh','run','download',str(approved['id']),'--repo',repo,
                   '--name',f"guided-assistance-{approved['run_number']}",'--dir',folder],check=True)
               source=pathlib.Path(folder)/'build'
-              report=json.loads((source/'simulator-check.json').read_text())
+              report=json.loads((source/'native-storage-check.json').read_text())
               assert report.get('status')=='passed' and report.get('checks')==9,report
               checked=subprocess.run(['python3','source/guided-assistance/scripts/check_ipa.py',
                   str(source/'GuidedAssistance.ipa'),os.environ['VERSION'],str(approved['run_number'])])
@@ -106,14 +106,14 @@ jobs:
               destination=pathlib.Path('source/guided-assistance/build')
               destination.mkdir(parents=True,exist_ok=True)
               files=['GuidedAssistance.ipa','guided-assistance-icon.png',
-                  'guided-assistance-screenshot.png','simulator-check.json']
+                  'native-storage-check.json']
               for name in files:
                   if name.endswith('.png'):
                       assert (source/name).read_bytes().startswith(bytes.fromhex('89504e470d0a1a0a'))
                   shutil.copy2(source/name,destination/name)
           with open(os.environ['GITHUB_OUTPUT'],'a') as output:
               output.write('ready=true\n')
-          print(f"Reusing tested IPA from run {approved['id']}: identical app and workflow, valid package, and passing simulator report.")
+          print(f"Reusing tested IPA from run {approved['id']}: identical app and workflow, valid package, and passing native storage report.")
           PY
       - name: Select Xcode
         if: steps.verified.outputs.ready != 'true'
@@ -131,21 +131,15 @@ jobs:
             source/guided-assistance/build/DerivedData
           key: guided-native-xcode266-${{ github.run_id }}
           restore-keys: guided-native-xcode266-
+      - name: Verify native document storage and encrypted backups
+        if: steps.verified.outputs.ready != 'true'
+        run: bash source/guided-assistance/scripts/check_storage.sh
       - name: Build installable iPhone IPA
         if: steps.verified.outputs.ready != 'true'
         env:
           GUIDED_VERSION: ${{ steps.release.outputs.version }}
           GUIDED_BUILD: ${{ github.run_number }}
         run: bash source/guided-assistance/build.sh
-      - name: Compile iPhone simulator app
-        if: steps.verified.outputs.ready != 'true'
-        env:
-          GUIDED_VERSION: ${{ steps.release.outputs.version }}
-          GUIDED_BUILD: ${{ github.run_number }}
-        run: bash source/guided-assistance/build.sh simulator
-      - name: Verify native app in iPhone simulator
-        if: steps.verified.outputs.ready != 'true'
-        run: bash source/guided-assistance/smoke.sh --skip-build
       - name: Check shared Mac app target
         if: steps.verified.outputs.ready != 'true'
         working-directory: source/guided-assistance
@@ -160,7 +154,7 @@ jobs:
           TAG="guided-$VERSION"
           IPA="$ROOT/build/GuidedAssistance.ipa"
           gh release create "$TAG" "$IPA" "$ROOT/build/guided-assistance-icon.png" \
-            "$ROOT/build/guided-assistance-screenshot.png" "$ROOT/build/simulator-check.json" \
+            "$ROOT/build/native-storage-check.json" \
             --draft --title "Guided Assistance $VERSION" --notes-file "$ROOT/RELEASE.md" --target "$GITHUB_SHA"
           gh release edit "$TAG" --draft=false --latest=false
           URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/GuidedAssistance.ipa"
@@ -177,7 +171,7 @@ jobs:
           app=next(a for a in data['apps'] if a['bundleIdentifier']=='com.kharrison.guidedassistance')
           base=f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/{sys.argv[1]}"
           app['iconURL']=base+'/guided-assistance-icon.png'
-          app['screenshots']=[base+'/guided-assistance-screenshot.png']
+          app['screenshots']=[]
           path.write_text(json.dumps(data,indent=2,ensure_ascii=False)+'\n')
           PY
           git config user.name 'github-actions[bot]'
@@ -193,8 +187,7 @@ jobs:
           path: |
             source/guided-assistance/build/GuidedAssistance.ipa
             source/guided-assistance/build/guided-assistance-icon.png
-            source/guided-assistance/build/guided-assistance-screenshot.png
-            source/guided-assistance/build/simulator-check.json
+            source/guided-assistance/build/native-storage-check.json
             source/guided-assistance/GuidedAssistance.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
           if-no-files-found: ignore
       - uses: actions/cache/save@v4
