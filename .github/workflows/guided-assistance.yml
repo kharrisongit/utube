@@ -129,7 +129,6 @@ jobs:
           path: |
             source/guided-assistance/build/Packages
             source/guided-assistance/build/DerivedData
-            source/guided-assistance/build/MacDerivedData
           key: guided-native-xcode266-${{ github.run_id }}
           restore-keys: guided-native-xcode266-
       - name: Build installable iPhone IPA
@@ -204,5 +203,4 @@ jobs:
           path: |
             source/guided-assistance/build/Packages
             source/guided-assistance/build/DerivedData
-            source/guided-assistance/build/MacDerivedData
           key: guided-native-xcode266-${{ github.run_id }}
