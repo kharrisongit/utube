@@ -183,14 +183,6 @@ jobs:
           git add source/apps.json
           git commit -m "Publish Guided Assistance $VERSION in AltStore [skip ci]"
           git push origin HEAD:main
-      - uses: actions/cache/save@v4
-        if: always() && steps.verified.outputs.ready != 'true'
-        with:
-          path: |
-            source/guided-assistance/build/Packages
-            source/guided-assistance/build/DerivedData
-            source/guided-assistance/build/MacDerivedData
-          key: guided-native-xcode266-${{ github.run_id }}
       - name: Save build artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -203,3 +195,11 @@ jobs:
             source/guided-assistance/build/simulator-check.json
             source/guided-assistance/GuidedAssistance.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
           if-no-files-found: ignore
+      - uses: actions/cache/save@v4
+        if: always() && steps.verified.outputs.ready != 'true'
+        with:
+          path: |
+            source/guided-assistance/build/Packages
+            source/guided-assistance/build/DerivedData
+            source/guided-assistance/build/MacDerivedData
+          key: guided-native-xcode266-${{ github.run_id }}
