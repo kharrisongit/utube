@@ -22,6 +22,7 @@ jobs:
       actions: write
       contents: read
     steps:
+      - uses: actions/checkout@v5
       - name: Clear superseded checks for this app
         if: github.event_name == 'pull_request'
         env:
@@ -38,9 +39,12 @@ jobs:
                   if run['id'] < current and run.get('head_branch') == os.environ['HEAD_BRANCH'] and run['status'] in ('queued','in_progress','waiting','pending'):
                       subprocess.run(['gh','api','-X','POST',f"repos/{repo}/actions/runs/{run['id']}/cancel"],check=False)
           PY
+      - name: Core knowledge checks
+        working-directory: source/guided-assistance
+        run: swift test
   build:
     needs: prepare
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
@@ -58,9 +62,6 @@ jobs:
           PATCH=0
           while git rev-parse -q --verify "refs/tags/guided-1.0.$PATCH" >/dev/null; do PATCH=$((PATCH+1)); done
           echo "version=1.0.$PATCH" >> "$GITHUB_OUTPUT"
-      - name: Core knowledge checks
-        working-directory: source/guided-assistance
-        run: swift test
       - name: Build installable iPhone IPA
         env:
           GUIDED_VERSION: ${{ steps.release.outputs.version }}
@@ -73,7 +74,7 @@ jobs:
         run: bash source/guided-assistance/smoke.sh
       - name: Check shared Mac app target
         working-directory: source/guided-assistance
-        run: xcodebuild -quiet -project GuidedAssistance.xcodeproj -scheme GuidedAssistance-Mac -configuration Release -destination 'platform=macOS,arch=arm64' -derivedDataPath build/MacDerivedData -clonedSourcePackagesDirPath build/Packages CODE_SIGNING_ALLOWED=NO build
+        run: xcodebuild -quiet -project GuidedAssistance.xcodeproj -scheme GuidedAssistance-Mac -configuration Release -destination 'generic/platform=macOS' -derivedDataPath build/MacDerivedData -clonedSourcePackagesDirPath build/Packages ARCHS=arm64 CODE_SIGNING_ALLOWED=NO build
       - name: Publish app and update existing AltStore source
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:

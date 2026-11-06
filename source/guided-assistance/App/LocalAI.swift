@@ -13,14 +13,17 @@ actor LocalAI {
     private var unloadWhenIdle = false
     func unload() {
         if working { unloadWhenIdle = true }
-        else { model = nil; Memory.clearCache() }
+        else if model != nil { model = nil; Memory.clearCache() }
     }
     func answer(question: String, previous: String?, evidence: [Evidence], modelURL: URL, think: Bool) async throws -> GroundedAnswer {
         guard !working else { throw KnowledgeError.noAnswer }
         working = true
         defer {
             working = false
-            if unloadWhenIdle { model = nil; unloadWhenIdle = false; Memory.clearCache() }
+            if unloadWhenIdle {
+                if model != nil { model = nil; Memory.clearCache() }
+                unloadWhenIdle = false
+            }
         }
         guard FileManager.default.fileExists(atPath: modelURL.appendingPathComponent("ready.json").path) else {
             throw KnowledgeError.modelUnavailable
@@ -84,6 +87,7 @@ final class ModelManager {
             defer { downloading = false; task = nil }
             do { try await download(); status = "Model ready. Chat now works offline." }
             catch is CancellationError { status = "Download canceled. You can retry later." }
+            catch let error as URLError where error.code == .cancelled { status = "Download canceled. You can retry later." }
             catch { status = "Download failed: \(error.localizedDescription)" }
         }
     }
