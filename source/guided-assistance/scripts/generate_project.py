@@ -40,6 +40,7 @@ support = [ref("App/Info.plist", "text.plist.xml"), ref("App/Mac.entitlements", 
 packages = {}
 for name, url, version in [
     ("mlx", "https://github.com/ml-explore/mlx-swift-lm", "3.32.3"),
+    ("mlx-core", "https://github.com/ml-explore/mlx-swift", "0.32.3"),
     ("transformers", "https://github.com/huggingface/swift-transformers", "1.3.0")
 ]:
     packages[name] = add(name, "XCRemoteSwiftPackageReference", repositoryURL=url,
@@ -51,7 +52,7 @@ for platform in ["iOS", "Mac"]:
     sourceBuilds = [add(name + path, "PBXBuildFile", fileRef=file) for path, file in files.items()]
     resourceBuilds = [add(name + path, "PBXBuildFile", fileRef=file) for path, file in resources.items()]
     dependencies, frameworks = [], []
-    for product, package in [("MLXLLM", "mlx"), ("MLXVLM", "mlx"), ("MLXLMCommon", "mlx"), ("Tokenizers", "transformers")]:
+    for product, package in [("MLXLLM", "mlx"), ("MLXVLM", "mlx"), ("MLXLMCommon", "mlx"), ("MLX", "mlx-core"), ("Tokenizers", "transformers")]:
         dependency = add(name + product, "XCSwiftPackageProductDependency", package=packages[package], productName=product)
         dependencies.append(dependency)
         frameworks.append(add(name + product + "build", "PBXBuildFile", productRef=dependency))

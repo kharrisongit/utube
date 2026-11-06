@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import CryptoKit
+import MLX
 import MLXLLM
 import MLXVLM
 import MLXLMCommon
@@ -12,19 +13,20 @@ actor LocalAI {
     private var unloadWhenIdle = false
     func unload() {
         if working { unloadWhenIdle = true }
-        else { model = nil }
+        else { model = nil; Memory.clearCache() }
     }
     func answer(question: String, previous: String?, evidence: [Evidence], modelURL: URL, think: Bool) async throws -> GroundedAnswer {
         guard !working else { throw KnowledgeError.noAnswer }
         working = true
         defer {
             working = false
-            if unloadWhenIdle { model = nil; unloadWhenIdle = false }
+            if unloadWhenIdle { model = nil; unloadWhenIdle = false; Memory.clearCache() }
         }
         guard FileManager.default.fileExists(atPath: modelURL.appendingPathComponent("ready.json").path) else {
             throw KnowledgeError.modelUnavailable
         }
         if model == nil {
+            Memory.cacheLimit = 20 * 1024 * 1024
             // Local-directory loader has no downloader and cannot fetch a model from the network.
             model = try await loadModelContainer(from: modelURL, using: LocalTokenizerLoader())
         }
@@ -62,11 +64,21 @@ final class ModelManager {
     var fraction = 0.0
     var task: Task<Void, Never>?
     let folder: URL
-    init(root: URL) { folder = root.appendingPathComponent("Models/Qwen3.5-4B-4bit", isDirectory: true) }
-    var installed: Bool { FileManager.default.fileExists(atPath: folder.appendingPathComponent("ready.json").path) }
+    private(set) var installed = false
+    init(root: URL) {
+        folder = root.appendingPathComponent("Models/Qwen3.5-4B-4bit", isDirectory: true)
+        installed = FileManager.default.fileExists(atPath: folder.appendingPathComponent("ready.json").path)
+    }
+
+    func remove() throws {
+        guard !downloading else { return }
+        try FileManager.default.removeItem(at: folder)
+        installed = false
+        status = "Model removed. Your knowledge base is unchanged."
+    }
 
     func start() {
-        guard !downloading else { return }
+        guard !downloading, !installed else { return }
         downloading = true
         task = Task {
             defer { downloading = false; task = nil }
@@ -118,6 +130,7 @@ final class ModelManager {
         try LibraryStore.writePrivate(marker, to: staging.appendingPathComponent("ready.json"))
         if FileManager.default.fileExists(atPath: folder.path) { try FileManager.default.removeItem(at: folder) }
         try FileManager.default.moveItem(at: staging, to: folder)
+        installed = true
         fraction = 1
     }
     nonisolated private static func check(_ response: URLResponse) throws {

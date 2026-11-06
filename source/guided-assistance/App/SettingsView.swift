@@ -66,7 +66,7 @@ struct SettingsView: View {
                 Button("Remove model", role: .destructive) {
                     Task {
                         await chat.engine.unload()
-                        do { try FileManager.default.removeItem(at: models.folder); models.status = "Model removed. Your knowledge base is unchanged." }
+                        do { try models.remove() }
                         catch { message = error.localizedDescription }
                     }
                 }

@@ -13,16 +13,44 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: opaline-release
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('guided-assistance-{0}', github.ref) || 'opaline-release' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Clear superseded checks for this app
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          python3 - <<'PY'
+          import json,os,subprocess
+          repo=os.environ['GITHUB_REPOSITORY']; current=int(os.environ['GITHUB_RUN_ID'])
+          url=f'repos/{repo}/actions/workflows/guided-assistance.yml/runs?event=pull_request&per_page=30'
+          result=subprocess.run(['gh','api',url],capture_output=True,text=True)
+          if result.returncode == 0:
+              for run in json.loads(result.stdout).get('workflow_runs',[]):
+                  if run['id'] < current and run.get('head_branch') == os.environ['HEAD_BRANCH'] and run['status'] in ('queued','in_progress','waiting','pending'):
+                      subprocess.run(['gh','api','-X','POST',f"repos/{repo}/actions/runs/{run['id']}/cancel"],check=False)
+          PY
   build:
-    runs-on: macos-26
+    needs: prepare
+    runs-on: macos-15
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+          xcodebuild -version
+          swift --version
       - name: Choose app version
         id: release
         shell: bash

@@ -122,6 +122,14 @@
 				"version" = "3.32.3";
 			};
 		};
+		"C53CD69872AF53283B529542" = {
+			"isa" = "XCRemoteSwiftPackageReference";
+			"repositoryURL" = "https://github.com/ml-explore/mlx-swift";
+			"requirement" = {
+				"kind" = "exactVersion";
+				"version" = "0.32.3";
+			};
+		};
 		"AD9B0702BC418499B1F2FB4E" = {
 			"isa" = "XCRemoteSwiftPackageReference";
 			"repositoryURL" = "https://github.com/huggingface/swift-transformers";
@@ -221,6 +229,15 @@
 			"isa" = "PBXBuildFile";
 			"productRef" = "DDD43B41D95EE477815DDDBA";
 		};
+		"C332ADC5956B2BB5F49D8997" = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"package" = "C53CD69872AF53283B529542";
+			"productName" = "MLX";
+		};
+		"23924561333A07DE7F50709E" = {
+			"isa" = "PBXBuildFile";
+			"productRef" = "C332ADC5956B2BB5F49D8997";
+		};
 		"E473DA3DD987C613FE32EB2F" = {
 			"isa" = "XCSwiftPackageProductDependency";
 			"package" = "AD9B0702BC418499B1F2FB4E";
@@ -259,6 +276,7 @@
 				"17B17741EF92FFBCD8DB90EC",
 				"8FAA464A2B16E06A4A3E3BF6",
 				"9D915722D34D2E87AE6DC8C7",
+				"23924561333A07DE7F50709E",
 				"2D96182D542F958831745393",
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
@@ -368,6 +386,7 @@
 				"50BB3DAAD60EF25CE3F6BBA2",
 				"81D00D8AA6AC1ECC9B19407F",
 				"DDD43B41D95EE477815DDDBA",
+				"C332ADC5956B2BB5F49D8997",
 				"E473DA3DD987C613FE32EB2F",
 			);
 		};
@@ -462,6 +481,15 @@
 			"isa" = "PBXBuildFile";
 			"productRef" = "E5F41A3DB374AFB3FF822CB8";
 		};
+		"6E50BAB61938DD6FBF17C089" = {
+			"isa" = "XCSwiftPackageProductDependency";
+			"package" = "C53CD69872AF53283B529542";
+			"productName" = "MLX";
+		};
+		"35FACED73EC0317A3C2653E0" = {
+			"isa" = "PBXBuildFile";
+			"productRef" = "6E50BAB61938DD6FBF17C089";
+		};
 		"FF5CCFE5D163F8B890576B55" = {
 			"isa" = "XCSwiftPackageProductDependency";
 			"package" = "AD9B0702BC418499B1F2FB4E";
@@ -500,6 +528,7 @@
 				"9A065D11E85FBE3AE61127F2",
 				"454D242917FBFEC165BC2151",
 				"5C5604E55C9BFCC7F2F8C864",
+				"35FACED73EC0317A3C2653E0",
 				"99EF7E6E51E76EBC797EF865",
 			);
 			"runOnlyForDeploymentPostprocessing" = 0;
@@ -611,6 +640,7 @@
 				"F3E8D63D3D7D5C23317F9831",
 				"91F97BAA20742CE5BB3ADCD1",
 				"E5F41A3DB374AFB3FF822CB8",
+				"6E50BAB61938DD6FBF17C089",
 				"FF5CCFE5D163F8B890576B55",
 			);
 		};
@@ -702,6 +732,7 @@
 			"projectRoot" = "";
 			"packageReferences" = (
 				"339A1EAC565D4DBF7C4389E7",
+				"C53CD69872AF53283B529542",
 				"AD9B0702BC418499B1F2FB4E",
 			);
 			"targets" = (
