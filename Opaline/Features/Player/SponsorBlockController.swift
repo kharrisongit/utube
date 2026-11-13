@@ -100,9 +100,12 @@ final class SponsorBlockController {
             to: target, toleranceBefore: .zero, toleranceAfter: .zero
         ) { [weak self, weak player] finished in
             DispatchQueue.main.async {
-                guard let self, let player else { return }
-                self.finishSkip(seg, player: player, requestGeneration: requestGeneration,
-                                origin: origin, finished: finished)
+                guard let self, let player,
+                      self.generation == requestGeneration
+                else { return }
+                self.finishSkip(
+                    seg, player: player, origin: origin, finished: finished
+                )
             }
         }
     }
@@ -119,11 +122,13 @@ final class SponsorBlockController {
     }
 
     private func finishSkip(
-        _ seg: SponsorBlockSegment, player: AVPlayer,
-        requestGeneration: Int, origin: String, finished: Bool
+        _ seg: SponsorBlockSegment,
+        player: AVPlayer,
+        origin: String,
+        finished: Bool
     ) {
-        guard generation == requestGeneration,
-              playerView?.player === player else { return }
+        guard playerView?.player === player
+        else { return }
         if pendingSkipUUID == seg.uuid {
             pendingSkipUUID = nil
         }
@@ -134,6 +139,5 @@ final class SponsorBlockController {
                 + "target=\(seg.endTime)s"
         )
         // An incomplete remote seek must not retry indefinitely.
-
     }
 }
