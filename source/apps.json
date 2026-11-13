@@ -27,6 +27,15 @@
       },
       "versions": [
         {
+          "version": "1.12.18",
+          "date": "2026-11-13T22:39:47Z",
+          "localizedDescription": "Playback recovery for videos that freeze mid-stream\n\n- If a streaming video stops advancing for 15 seconds, uTube can reopen the current stream once and resume at your place. This keeps the selected quality and the player used for Picture in Picture or AirPlay.\n- Open Stats for nerds while a video is buffering to see the player's waiting reason and how much video can play from your current position.\n- Share the debug log from Settings → Debug after a stall. It records the playback position, buffer, selected stream, network interface, audio route and available transfer statistics. Media error entries identify the server and format while omitting signed media URLs.",
+          "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.18/uTube_1.12.18.ipa",
+          "size": 11150440,
+          "minOSVersion": "12.0",
+          "buildVersion": "699"
+        },
+        {
           "version": "1.12.17",
           "date": "2026-11-05T22:42:44Z",
           "localizedDescription": "Playback recovery for videos that freeze mid-stream\n\n- If a streaming video stops advancing for 15 seconds, uTube can reopen the current stream once and resume at your place. This keeps the selected quality and the player used for Picture in Picture or AirPlay.\n- Open Stats for nerds while a video is buffering to see the player's waiting reason and how much video can play from your current position.\n- Share the debug log from Settings → Debug after a stall. It records the playback position, buffer, selected stream, network interface, audio route and available transfer statistics. Media error entries identify the server and format while omitting signed media URLs.",
@@ -117,11 +126,11 @@
           "buildVersion": "630"
         }
       ],
-      "version": "1.12.17",
-      "versionDate": "2026-11-05T22:42:44Z",
+      "version": "1.12.18",
+      "versionDate": "2026-11-13T22:39:47Z",
       "versionDescription": "Playback recovery for videos that freeze mid-stream\n\n- If a streaming video stops advancing for 15 seconds, uTube can reopen the current stream once and resume at your place. This keeps the selected quality and the player used for Picture in Picture or AirPlay.\n- Open Stats for nerds while a video is buffering to see the player's waiting reason and how much video can play from your current position.\n- Share the debug log from Settings → Debug after a stall. It records the playback position, buffer, selected stream, network interface, audio route and available transfer statistics. Media error entries identify the server and format while omitting signed media URLs.",
-      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.17/uTube_1.12.17.ipa",
-      "size": 11150863
+      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.18/uTube_1.12.18.ipa",
+      "size": 11150440
     },
     {
       "name": "The Last Dragonrider",
@@ -451,6 +460,15 @@
     }
   ],
   "news": [
+    {
+      "title": "uTube 1.12.18 — kharrison",
+      "identifier": "com.kharrison.utube.release-1.12.18",
+      "caption": "If a streaming video stops advancing for 15 seconds, uTube can reopen the current stream once and resume at your plac…",
+      "date": "2026-11-13T22:39:47Z",
+      "tintColor": "FF0000",
+      "appID": "com.kharrison.utube",
+      "url": "https://github.com/kharrisongit/utube/releases/tag/1.12.18"
+    },
     {
       "title": "Guided Assistance 1.0.0",
       "identifier": "com.kharrison.guidedassistance.release-1.0.0",
