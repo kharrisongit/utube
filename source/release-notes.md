@@ -1,5 +1,7 @@
-Playback recovery for videos that freeze mid-stream
+Playback waiting messages without Stats for Nerds
 
-- If a streaming video stops advancing for 15 seconds, uTube can reopen the current stream once and resume at your place. This keeps the selected quality and the player used for Picture in Picture or AirPlay.
-- Open Stats for nerds while a video is buffering to see the player's waiting reason and how much video can play from your current position.
-- Share the debug log from Settings → Debug after a stall. It records the playback position, buffer, selected stream, network interface, audio route and available transfer statistics. Media error entries identify the server and format while omitting signed media URLs.
+- A short message now appears beneath the buffering spinner, even with Stats for Nerds off and playback controls hidden.
+- Shows the player’s known waiting state: buffering video, measuring download speed, loading the stream, or waiting for playback to resume. It does not guess at a network or AirPlay failure.
+- The message refreshes while waiting and clears on playback, pause, or a player change.
+
+Also includes the recent SponsorBlock repeated-seek and AirPlay recovery fixes.

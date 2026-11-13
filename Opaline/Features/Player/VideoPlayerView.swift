@@ -84,6 +84,7 @@ final class VideoPlayerView: UIView {
     let spinner = UIActivityIndicatorView(
         style: .whiteLarge
     )
+    let bufferingLabel = UILabel()
     let settingsButton = UIButton(type: .system)
     let pipButton = UIButton(type: .system)
     let ccButton = UIButton(type: .system), speedButton = UIButton(type: .system)

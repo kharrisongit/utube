@@ -13,6 +13,7 @@ final class ClockResyncState {
 
 extension VideoPlayerView {
     func attach(player newPlayer: AVPlayer) {
+        hideBufferingIndicator()
         interruption.state = PlaybackInterruptionState()
         BackgroundPlaybackService.activate()
         player = newPlayer
@@ -33,6 +34,7 @@ extension VideoPlayerView {
     /// layer is deliberately untouched — it stays detached while
     /// backgrounded and comes back on activation.
     func rebind(player newPlayer: AVPlayer) {
+        hideBufferingIndicator()
         player = newPlayer
         removePlayerObservers()
         addPlayerObservers()
@@ -40,6 +42,7 @@ extension VideoPlayerView {
     }
 
     func detach() {
+        hideBufferingIndicator()
         removePeriodicObserver()
         removePlayerObservers()
         clockResync.isStalled = false

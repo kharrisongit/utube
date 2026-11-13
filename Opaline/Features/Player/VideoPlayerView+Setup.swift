@@ -153,6 +153,7 @@ extension VideoPlayerView {
         spinner.translatesAutoresizingMaskIntoConstraints = false
         spinner.hidesWhenStopped = true
         addSubview(spinner)
+        setupBufferingLabel()
         NSLayoutConstraint.activate([
             spinner.centerXAnchor.constraint(
                 equalTo: centerXAnchor
