@@ -57,31 +57,15 @@ extension WatchViewController {
         }
         let seconds = Int(PlaybackStallPolicy.waitSeconds)
         logPlaybackStall("still waiting after \(seconds)s", item: item)
-        // Reopening the same media asset is only the first recovery step.
-        // A second stall requires a freshly resolved source.
         if stallWatch.didRetry {
-            guard !isRecoveringPlayback, !pendingRecoverySeek,
-                  let view = videoPlayerView, !view.interruption.state.active else { return }
-            stallWatch.cancel()
-            AppLog.player("stall retry failed: resolving fresh playback stream")
-            lastPlaybackPosition = position.seconds.isFinite
-                ? max(0, position.seconds) : lastPlaybackPosition
-            recoverPlayback(skipAirPlayHandoff: true)
+            resolveStalledPlayback(item: item, position: position, reason: "retry failed")
             return
         }
         guard canRestartStalledItem(item),
-              PlaybackStallPolicy.canRestart(at: position.seconds, duration: item.duration.seconds)
-        else {
-            // AirPlay and non-HLS items cannot use the local-item retry.
-            guard !isRecoveringPlayback, !pendingRecoverySeek,
-                  let view = videoPlayerView, !view.isAtEnd,
-                  !view.interruption.state.active, !view.seekBar.isScrubbing,
-                  !view.holdScrub.isActive else { return }
-            stallWatch.cancel()
-            AppLog.player("stall retry unavailable: resolving fresh playback stream")
-            lastPlaybackPosition = position.seconds.isFinite
-                ? max(0, position.seconds) : lastPlaybackPosition
-            recoverPlayback(skipAirPlayHandoff: true)
+              PlaybackStallPolicy.canRestart(
+                at: position.seconds, duration: item.duration.seconds
+              ) else {
+            resolveStalledPlayback(item: item, position: position, reason: "retry unavailable")
             return
         }
         stallWatch.didRetry = true
@@ -93,6 +77,29 @@ extension WatchViewController {
         stallWatch.replacement = replacement
         stallWatch.resumePosition = position.seconds
         attachToExistingPlayer(player: player, item: replacement)
+    }
+
+    private func resolveStalledPlayback(
+        item: AVPlayerItem, position: CMTime, reason: String
+    ) {
+        guard !isRecoveringPlayback, !pendingRecoverySeek,
+              let view = videoPlayerView, !view.isAtEnd,
+              !view.interruption.state.active, !view.seekBar.isScrubbing,
+              !view.holdScrub.isActive, airPlayHandoffState.pending == nil,
+              UIApplication.shared.applicationState != .background
+                  || BackgroundPlaybackPolicy.shouldContinue(
+                    backgroundEnabled: BackgroundPlaybackService.isEnabled,
+                    airPlayActive: view.isAirPlayActive,
+                    pipActive: view.isPiPActive
+                  ) else {
+            return
+        }
+        stallWatch.cancel()
+        AppLog.player("stall \(reason): resolving fresh playback stream")
+        if position.seconds.isFinite {
+            lastPlaybackPosition = max(0, position.seconds)
+        }
+        recoverPlayback(skipAirPlayHandoff: true)
     }
 
     func noteStallRecoveryProgress(at time: Double) {
