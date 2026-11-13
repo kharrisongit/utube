@@ -208,6 +208,31 @@ extension VideoPlayerView {
                 player.play()
             }
         }
+        // AirPlay can disappear while the app is backgrounded without a route
+        // change callback, leaving an interruption that iOS never ends.
+        // Recover only once the user has returned to the foreground.
+        if interruption.interruptedAirPlayInBackground && !isAirPlayActive {
+            let interruptedPlayer = player
+            let pauseMarker = interruption.airPlayDropUserPause
+            AppLog.player("AirPlay session lost in background; checking foreground fallback")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                guard let self, self.player === interruptedPlayer,
+                      let player = self.player, player.rate == 0,
+                      !self.isAirPlayActive, !self.isPiPActive, !self.isAtEnd,
+                      self.interruption.interruptedAirPlayInBackground,
+                      self.multitaskPause.lastUserPause == pauseMarker,
+                      UIApplication.shared.applicationState == .active,
+                      player.currentItem?.status == .readyToPlay else { return }
+                guard BackgroundPlaybackService.activate() else {
+                    self.logPlaybackState("AirPlay foreground fallback activation failed")
+                    return
+                }
+                self.interruption.interruptedAirPlayInBackground = false
+                self.interruption.state = PlaybackInterruptionState()
+                player.playImmediately(atRate: self.playbackSpeed)
+                self.logPlaybackState("AirPlay foreground fallback resumed locally")
+            }
+        }
         // Re-evaluate the PiP setting (it may have changed in Settings).
         setupPiP()
     }
