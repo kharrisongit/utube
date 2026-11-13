@@ -19,8 +19,8 @@ extension WatchViewController {
         itemStartsAt = nil
     }
 
-    func recoverPlayback(tokenRejected: Bool = false) {
-        if prepareAirPlayPlayback() {
+    func recoverPlayback(tokenRejected: Bool = false, skipAirPlayHandoff: Bool = false) {
+        if !skipAirPlayHandoff && prepareAirPlayPlayback() {
             return
         }
         guard !isRecoveringPlayback,
