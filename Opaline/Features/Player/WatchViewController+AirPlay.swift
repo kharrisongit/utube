@@ -39,7 +39,7 @@ extension WatchViewController {
                 return
             }
             if !prepareAirPlayPlayback(afterRejection: true) {
-                showPlaybackError("player.error.playback".localized)
+                recoverPlayback(skipAirPlayHandoff: true)
             }
         }
         return true
@@ -117,9 +117,9 @@ extension WatchViewController {
         case .failure(let error):
             AppLog.player("AirPlay: compatible stream failed: \(error.localizedDescription)")
             if handoff.afterRejection {
-                showPlaybackError("player.error.playback".localized)
+                recoverPlayback(skipAirPlayHandoff: true)
             } else if handoff.item.status == .failed {
-                recoverPlayback()
+                recoverPlayback(skipAirPlayHandoff: true)
             }
         }
     }
