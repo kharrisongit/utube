@@ -45,7 +45,7 @@ extension VideoPlayerView {
         logPlaybackState("audio interruption \(type.rawValue)")
         switch type {
         case .began:
-            if player.isExternalPlaybackActive && !isAirPlayActive {
+            if player.isExternalPlaybackActive && !AVAudioSession.sharedInstance().currentRoute.outputs.contains(where: { $0.portType == .airPlay }) {
                 interruption.interruptedAirPlayInBackground = true
                 interruption.airPlayDropUserPause = multitaskPause.lastUserPause
                 AppLog.player("AirPlay interrupted after audio route moved to local output")
