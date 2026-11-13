@@ -28,7 +28,9 @@ final class SponsorBlockController {
               playerView?.player?.currentItem?.status == .readyToPlay
         else { return }
 
-        guard time.isFinite else { return }
+        guard time.isFinite else {
+            return
+        }
         let active = findActiveSegment(at: time)
 
         if let seg = active {
@@ -86,46 +88,52 @@ final class SponsorBlockController {
               !attemptedSkipUUIDs.contains(seg.uuid)
         else { return }
 
-        // Mark the attempt *before* seeking. During AirPlay handoff, periodic
-        // observers can alternate old/new positions before seek completion.
+        // Mark before seeking to prevent duplicate AirPlay skips.
         attemptedSkipUUIDs.insert(seg.uuid)
         pendingSkipUUID = seg.uuid
         playerView?.hideSkipButton()
         let requestGeneration = generation
-        let position = CMTimeGetSeconds(player.currentTime())
-        let target = CMTime(
-            seconds: seg.endTime, preferredTimescale: 600
-        )
         let origin = initiatedByUser ? "user" : "auto"
+        logSkipRequest(seg, player: player, origin: origin)
+        let target = CMTime(seconds: seg.endTime, preferredTimescale: 600)
+        player.seek(
+            to: target, toleranceBefore: .zero, toleranceAfter: .zero
+        ) { [weak self, weak player] finished in
+            DispatchQueue.main.async {
+                guard let self, let player else { return }
+                self.finishSkip(seg, player: player, requestGeneration: requestGeneration,
+                                origin: origin, finished: finished)
+            }
+        }
+    }
+
+    private func logSkipRequest(
+        _ seg: SponsorBlockSegment, player: AVPlayer, origin: String
+    ) {
+        let position = CMTimeGetSeconds(player.currentTime())
         AppLog.sponsorBlock(
             "\(origin) skip requested \(seg.category.displayName) "
                 + "[\(seg.startTime)–\(seg.endTime)] "
                 + "from=\(position)s target=\(seg.endTime)s"
         )
-        player.seek(
-            to: target,
-            toleranceBefore: .zero,
-            toleranceAfter: .zero
-        ) { [weak self, weak player] finished in
-            DispatchQueue.main.async {
-                guard let self,
-                      self.generation == requestGeneration,
-                      self.playerView?.player === player
-                else { return }
-                if self.pendingSkipUUID == seg.uuid {
-                    self.pendingSkipUUID = nil
-                }
-                let actual = player.map {
-                    CMTimeGetSeconds($0.currentTime())
-                } ?? .nan
-                AppLog.sponsorBlock(
-                    "\(origin) skip completed \(seg.category.displayName) "
-                        + "finished=\(finished) position=\(actual)s "
-                        + "target=\(seg.endTime)s"
-                )
-                // Do not automatically retry an incomplete remote seek:
-                // repeatedly issuing it can stall AirPlay indefinitely.
-            }
+    }
+
+    private func finishSkip(
+        _ seg: SponsorBlockSegment, player: AVPlayer,
+        requestGeneration: Int, origin: String, finished: Bool
+    ) {
+        guard generation == requestGeneration,
+              playerView?.player === player else { return }
+        if pendingSkipUUID == seg.uuid {
+            pendingSkipUUID = nil
         }
+        let actual = CMTimeGetSeconds(player.currentTime())
+        AppLog.sponsorBlock(
+            "\(origin) skip completed \(seg.category.displayName) "
+                + "finished=\(finished) position=\(actual)s "
+                + "target=\(seg.endTime)s"
+        )
+        // An incomplete remote seek must not retry indefinitely.
+
     }
 }
