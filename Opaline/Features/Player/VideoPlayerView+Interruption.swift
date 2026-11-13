@@ -5,6 +5,8 @@ final class PlayerInterruptionTracker {
     var state = PlaybackInterruptionState()
     var lastPlayingAt: CFTimeInterval = 0
     weak var player: AVPlayer?
+    var interruptedAirPlayInBackground = false
+    var airPlayDropUserPause: CFTimeInterval = 0
 }
 
 extension VideoPlayerView {
@@ -43,6 +45,11 @@ extension VideoPlayerView {
         logPlaybackState("audio interruption \(type.rawValue)")
         switch type {
         case .began:
+            if player.isExternalPlaybackActive && !isAirPlayActive {
+                interruption.interruptedAirPlayInBackground = true
+                interruption.airPlayDropUserPause = multitaskPause.lastUserPause
+                AppLog.player("AirPlay interrupted after audio route moved to local output")
+            }
             multitaskPause.systemPaused = false
             // AVPlayer may already have changed rate to zero before this notification arrives.
             let recentlyPlaying = CACurrentMediaTime() - interruption.lastPlayingAt < 1
@@ -69,6 +76,12 @@ extension VideoPlayerView {
             lastUserPause: multitaskPause.lastUserPause
         )
         interruption.player = nil
+        if interruption.interruptedAirPlayInBackground {
+            interruption.interruptedAirPlayInBackground = false
+            if resume && !isAirPlayActive {
+                AppLog.player("AirPlay interruption ended; local playback available")
+            }
+        }
         guard resume, player.currentItem?.status == .readyToPlay else {
             return
         }
