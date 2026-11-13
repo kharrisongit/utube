@@ -106,8 +106,7 @@ final class VideoPlayerView: UIView {
     let playPauseButton = UIButton(type: .system)
     let forwardButton = UIButton(type: .system)
     let seekBar = VideoSeekBar()
-    let currentTimeLabel = UILabel()
-    let durationLabel = UILabel()
+    let currentTimeLabel = UILabel(), durationLabel = UILabel()
     let fullscreenButton = UIButton(type: .system)
 
     // MARK: - Dim Overlay

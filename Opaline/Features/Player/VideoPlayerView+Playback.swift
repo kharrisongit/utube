@@ -1,7 +1,6 @@
 import AVFoundation
 import AVKit
 import UIKit
-
 /// State for the stall-recovery clock resync (issue #14).
 final class ClockResyncState {
     var isStalled = false
