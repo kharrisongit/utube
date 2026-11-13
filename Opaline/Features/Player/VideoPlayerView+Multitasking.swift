@@ -7,6 +7,7 @@ final class MultitaskPauseState {
     var lastUserPause: CFTimeInterval = 0
     var lastResume: CFTimeInterval = 0
     var resumeAttempts = 0
+    var airPlayRecoveryGeneration = 0
 }
 
 extension VideoPlayerView {
@@ -66,14 +67,65 @@ extension VideoPlayerView {
     /// the delay, so the order of the two notifications does not matter.
     @objc
     func audioRouteChanged(_ note: Notification) {
-        DispatchQueue.main.async { [weak self] in self?.refreshAirPlayRoute() }
-        let raw = note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
-        guard raw == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue
-        else {
-            return
+        let raw = note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt ?? 0
+        let reason = AVAudioSession.RouteChangeReason(rawValue: raw)
+        let previous = note.userInfo?[AVAudioSessionRouteChangePreviousRouteKey]
+            as? AVAudioSessionRouteDescription
+        let previousPorts = previous?.outputs.map { $0.portType.rawValue } ?? []
+        let previouslyAirPlay = previous?.outputs.contains {
+            $0.portType == .airPlay
+        } ?? false
+        AppLog.player(
+            "audio route changed: reason=\(raw) previous=\(previousPorts.joined(separator: ","))"
+        )
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.refreshAirPlayRoute()
+            if reason == .oldDeviceUnavailable {
+                self.logPlaybackState("audio output disconnected")
+                let now = CACurrentMediaTime()
+                let wasPlaying = self.player?.rate ?? 0 > 0
+                    || (now - self.interruption.lastPlayingAt < 2
+                        && self.interruption.lastPlayingAt > self.multitaskPause.lastUserPause)
+                // Never automatically play on the speaker for headphones or
+                // a user-paused video. Only recover an interrupted AirPlay session.
+                self.multitaskPause.lastUserPause = now
+                if previouslyAirPlay && wasPlaying && !self.isAtEnd {
+                    self.scheduleAirPlayDropRecovery()
+                }
+            } else if reason == .newDeviceAvailable {
+                self.multitaskPause.airPlayRecoveryGeneration += 1
+            }
         }
-        logPlaybackState("audio output disconnected")
-        multitaskPause.lastUserPause = CACurrentMediaTime()
+    }
+
+    private func scheduleAirPlayDropRecovery() {
+        multitaskPause.airPlayRecoveryGeneration += 1
+        let generation = multitaskPause.airPlayRecoveryGeneration
+        let playerAtDrop = player
+        let pauseAtDrop = multitaskPause.lastUserPause
+        AppLog.player("unexpected AirPlay disconnect: awaiting stable local route")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            guard let self, generation == self.multitaskPause.airPlayRecoveryGeneration,
+                  self.player === playerAtDrop, let player = self.player,
+                  player.currentItem?.status == .readyToPlay,
+                  !self.interruption.state.active,
+                  !self.isPiPActive, !self.isAtEnd,
+                  !self.isAirPlayActive,
+                  self.multitaskPause.lastUserPause == pauseAtDrop,
+                  UIApplication.shared.applicationState == .active else {
+                self?.logPlaybackState("AirPlay fallback deferred or cancelled")
+                return
+            }
+            // If the receiver did not reconnect, continue at the existing
+            // playhead locally rather than leaving the video stranded.
+            guard BackgroundPlaybackService.activate() else {
+                self.logPlaybackState("AirPlay fallback audio activation failed")
+                return
+            }
+            player.playImmediately(atRate: self.playbackSpeed)
+            self.logPlaybackState("AirPlay disconnected; resumed locally")
+        }
     }
 
     private func resumeAfterSystemPause() {
