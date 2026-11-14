@@ -79,7 +79,9 @@ extension VideoPlayerView {
             "audio route changed: reason=\(raw) previous=\(previousPorts.joined(separator: ","))"
         )
         DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
+            guard let self else {
+                return
+            }
             self.refreshAirPlayRoute()
             if reason == .oldDeviceUnavailable {
                 self.logPlaybackState("audio output disconnected")

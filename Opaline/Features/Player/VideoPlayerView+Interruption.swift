@@ -45,7 +45,10 @@ extension VideoPlayerView {
         logPlaybackState("audio interruption \(type.rawValue)")
         switch type {
         case .began:
-            if player.isExternalPlaybackActive && !AVAudioSession.sharedInstance().currentRoute.outputs.contains(where: { $0.portType == .airPlay }) {
+            if player.isExternalPlaybackActive
+                && !AVAudioSession.sharedInstance().currentRoute.outputs.contains(
+                    where: { $0.portType == .airPlay }
+                ) {
                 interruption.interruptedAirPlayInBackground = true
                 interruption.airPlayDropUserPause = multitaskPause.lastUserPause
                 AppLog.player("AirPlay interrupted after audio route moved to local output")
@@ -96,6 +99,35 @@ extension VideoPlayerView {
         }
         player.playImmediately(atRate: playbackSpeed)
         logPlaybackState("resumed after audio interruption")
+    }
+
+    // AirPlay can disappear in the background without an ending interruption.
+    func recoverBackgroundAirPlayIfNeeded(player: AVPlayer) {
+        guard interruption.interruptedAirPlayInBackground, !isAirPlayActive else {
+            return
+        }
+        let interruptedPlayer = player
+        let pauseMarker = interruption.airPlayDropUserPause
+        AppLog.player("AirPlay session lost in background; checking foreground fallback")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self, self.player === interruptedPlayer,
+                  let player = self.player, player.rate == 0,
+                  !self.isAirPlayActive, !self.isPiPActive, !self.isAtEnd,
+                  self.interruption.interruptedAirPlayInBackground,
+                  self.multitaskPause.lastUserPause == pauseMarker,
+                  UIApplication.shared.applicationState == .active,
+                  player.currentItem?.status == .readyToPlay else {
+                return
+            }
+            guard BackgroundPlaybackService.activate() else {
+                self.logPlaybackState("AirPlay foreground fallback activation failed")
+                return
+            }
+            self.interruption.interruptedAirPlayInBackground = false
+            self.interruption.state = PlaybackInterruptionState()
+            player.playImmediately(atRate: self.playbackSpeed)
+            self.logPlaybackState("AirPlay foreground fallback resumed locally")
+        }
     }
 
     func logPlaybackState(_ event: String) {
