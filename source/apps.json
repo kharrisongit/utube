@@ -27,6 +27,15 @@
       },
       "versions": [
         {
+          "version": "1.12.20",
+          "date": "2026-11-14T00:20:13Z",
+          "localizedDescription": "Playback waiting messages without Stats for Nerds\n\n- A short message now appears beneath the buffering spinner, even with Stats for Nerds off and playback controls hidden.\n- Shows the player’s known waiting state: buffering video, measuring download speed, loading the stream, or waiting for playback to resume. It does not guess at a network or AirPlay failure.\n- The message refreshes while waiting and clears on playback, pause, or a player change.\n\nAlso includes the recent SponsorBlock repeated-seek and AirPlay recovery fixes.",
+          "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.20/uTube_1.12.20.ipa",
+          "size": 11157369,
+          "minOSVersion": "12.0",
+          "buildVersion": "708"
+        },
+        {
           "version": "1.12.19",
           "date": "2026-11-13T23:00:35Z",
           "localizedDescription": "Playback waiting messages without Stats for Nerds\n\n- A short message now appears beneath the buffering spinner, even with Stats for Nerds off and playback controls hidden.\n- Shows the player’s known waiting state: buffering video, measuring download speed, loading the stream, or waiting for playback to resume. It does not guess at a network or AirPlay failure.\n- The message refreshes while waiting and clears on playback, pause, or a player change.\n\nAlso includes the recent SponsorBlock repeated-seek and AirPlay recovery fixes.",
@@ -135,11 +144,11 @@
           "buildVersion": "630"
         }
       ],
-      "version": "1.12.19",
-      "versionDate": "2026-11-13T23:00:35Z",
+      "version": "1.12.20",
+      "versionDate": "2026-11-14T00:20:13Z",
       "versionDescription": "Playback waiting messages without Stats for Nerds\n\n- A short message now appears beneath the buffering spinner, even with Stats for Nerds off and playback controls hidden.\n- Shows the player’s known waiting state: buffering video, measuring download speed, loading the stream, or waiting for playback to resume. It does not guess at a network or AirPlay failure.\n- The message refreshes while waiting and clears on playback, pause, or a player change.\n\nAlso includes the recent SponsorBlock repeated-seek and AirPlay recovery fixes.",
-      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.19/uTube_1.12.19.ipa",
-      "size": 11153037
+      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.20/uTube_1.12.20.ipa",
+      "size": 11157369
     },
     {
       "name": "The Last Dragonrider",
@@ -469,6 +478,15 @@
     }
   ],
   "news": [
+    {
+      "title": "uTube 1.12.20 — kharrison",
+      "identifier": "com.kharrison.utube.release-1.12.20",
+      "caption": "A short message now appears beneath the buffering spinner, even with Stats for Nerds off and playback controls hidden.",
+      "date": "2026-11-14T00:20:13Z",
+      "tintColor": "FF0000",
+      "appID": "com.kharrison.utube",
+      "url": "https://github.com/kharrisongit/utube/releases/tag/1.12.20"
+    },
     {
       "title": "uTube 1.12.19 — kharrison",
       "identifier": "com.kharrison.utube.release-1.12.19",
