@@ -45,13 +45,22 @@ extension VideoPlayerView {
         logPlaybackState("audio interruption \(type.rawValue)")
         switch type {
         case .began:
-            if player.isExternalPlaybackActive
-                && !AVAudioSession.sharedInstance().currentRoute.outputs.contains(
-                    where: { $0.portType == .airPlay }
-                ) {
+            // The route can still read AirPlay when iOS interrupts a
+            // background session; external playback may vanish seconds later
+            // without an .ended notification (observed in the field).
+            let backgroundAirPlay = player.isExternalPlaybackActive
+                && UIApplication.shared.applicationState == .background
+            let routeMovedOffAirPlay = player.isExternalPlaybackActive
+                && !AVAudioSession.sharedInstance().currentRoute.outputs.contains {
+                    $0.portType == .airPlay
+                }
+            if backgroundAirPlay || routeMovedOffAirPlay {
                 interruption.interruptedAirPlayInBackground = true
                 interruption.airPlayDropUserPause = multitaskPause.lastUserPause
-                AppLog.player("AirPlay interrupted after audio route moved to local output")
+                AppLog.player(
+                    "AirPlay interruption tracked: background=\(backgroundAirPlay)"
+                        + " routeMoved=\(routeMovedOffAirPlay)"
+                )
             }
             multitaskPause.systemPaused = false
             // AVPlayer may already have changed rate to zero before this notification arrives.
@@ -73,6 +82,8 @@ extension VideoPlayerView {
     private func resumeAfterInterruption(_ note: Notification, player: AVPlayer) {
         let raw = note.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
         let allowed = AVAudioSession.InterruptionOptions(rawValue: raw).contains(.shouldResume)
+        AppLog.player("audio interruption ended: shouldResume=\(allowed)"
+            + " samePlayer=\(interruption.player === player)")
         let samePlayer = interruption.player === player
         let resume = interruption.state.end(
             shouldResume: allowed && samePlayer,
