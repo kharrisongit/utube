@@ -75,27 +75,45 @@ extension VideoPlayerView {
         let previouslyAirPlay = previous?.outputs.contains {
             $0.portType == .airPlay
         } ?? false
+        let currentPorts = AVAudioSession.sharedInstance().currentRoute.outputs
+            .map { $0.portType.rawValue }
         AppLog.player(
             "audio route changed: reason=\(raw) previous=\(previousPorts.joined(separator: ","))"
+                + " current=\(currentPorts.joined(separator: ","))"
         )
         DispatchQueue.main.async { [weak self] in
             guard let self else {
                 return
             }
             self.refreshAirPlayRoute()
+            let now = CACurrentMediaTime()
+            let wasPlaying = self.player?.rate ?? 0 > 0
+                || (now - self.interruption.lastPlayingAt < 2
+                    && self.interruption.lastPlayingAt > self.multitaskPause.lastUserPause)
+            let routeLostAirPlay = previouslyAirPlay
+                && !AVAudioSession.sharedInstance().currentRoute.outputs.contains {
+                    $0.portType == .airPlay
+                }
+                && !self.isAirPlayActive
+
             if reason == .oldDeviceUnavailable {
                 self.logPlaybackState("audio output disconnected")
-                let now = CACurrentMediaTime()
-                let wasPlaying = self.player?.rate ?? 0 > 0
-                    || (now - self.interruption.lastPlayingAt < 2
-                        && self.interruption.lastPlayingAt > self.multitaskPause.lastUserPause)
-                // Never automatically play on the speaker for headphones or
-                // a user-paused video. Only recover an interrupted AirPlay session.
+                // A removed headphone or Bluetooth receiver must never trigger
+                // unexpected playback from the phone speaker.
                 self.multitaskPause.lastUserPause = now
-                if previouslyAirPlay && wasPlaying && !self.isAtEnd {
+            }
+            if routeLostAirPlay {
+                self.logPlaybackState("AirPlay route lost (reason=\(raw))")
+                // iOS sometimes reports a category/configuration change rather
+                // than oldDeviceUnavailable when the receiver drops. Don't
+                // ignore that case. This cannot force the TV to reconnect;
+                // only attempt local recovery after the interruption ends.
+                if wasPlaying && !self.isAtEnd {
                     self.scheduleAirPlayDropRecovery()
                 }
-            } else if reason == .newDeviceAvailable {
+            } else if reason == .newDeviceAvailable || self.isAirPlayActive {
+                // Prevent an old delayed fallback from playing on the phone
+                // after an AirPlay route has been restored.
                 self.multitaskPause.airPlayRecoveryGeneration += 1
             }
         }
