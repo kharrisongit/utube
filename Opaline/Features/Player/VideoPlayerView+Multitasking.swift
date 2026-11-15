@@ -68,7 +68,6 @@ extension VideoPlayerView {
     @objc
     func audioRouteChanged(_ note: Notification) {
         let raw = note.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt ?? 0
-        let reason = AVAudioSession.RouteChangeReason(rawValue: raw)
         let previous = note.userInfo?[AVAudioSessionRouteChangePreviousRouteKey]
             as? AVAudioSessionRouteDescription
         let previousPorts = previous?.outputs.map { $0.portType.rawValue } ?? []
@@ -82,40 +81,42 @@ extension VideoPlayerView {
                 + " current=\(currentPorts.joined(separator: ","))"
         )
         DispatchQueue.main.async { [weak self] in
-            guard let self else {
-                return
-            }
-            self.refreshAirPlayRoute()
-            let now = CACurrentMediaTime()
-            let wasPlaying = self.player?.rate ?? 0 > 0
-                || (now - self.interruption.lastPlayingAt < 2
-                    && self.interruption.lastPlayingAt > self.multitaskPause.lastUserPause)
-            let routeLostAirPlay = previouslyAirPlay
-                && !AVAudioSession.sharedInstance().currentRoute.outputs.contains {
-                    $0.portType == .airPlay
-                }
-                && !self.isAirPlayActive
+            self?.handleAudioRouteChange(raw: raw, previouslyAirPlay: previouslyAirPlay)
+        }
+    }
 
-            if reason == .oldDeviceUnavailable {
-                self.logPlaybackState("audio output disconnected")
-                // A removed headphone or Bluetooth receiver must never trigger
-                // unexpected playback from the phone speaker.
-                self.multitaskPause.lastUserPause = now
+    private func handleAudioRouteChange(raw: UInt, previouslyAirPlay: Bool) {
+        let reason = AVAudioSession.RouteChangeReason(rawValue: raw)
+        refreshAirPlayRoute()
+        let now = CACurrentMediaTime()
+        let wasPlaying = player?.rate ?? 0 > 0
+            || (now - interruption.lastPlayingAt < 2
+                && interruption.lastPlayingAt > multitaskPause.lastUserPause)
+        let routeLostAirPlay = previouslyAirPlay
+            && !AVAudioSession.sharedInstance().currentRoute.outputs.contains {
+                $0.portType == .airPlay
             }
-            if routeLostAirPlay {
-                self.logPlaybackState("AirPlay route lost (reason=\(raw))")
-                // iOS sometimes reports a category/configuration change rather
-                // than oldDeviceUnavailable when the receiver drops. Don't
-                // ignore that case. This cannot force the TV to reconnect;
-                // only attempt local recovery after the interruption ends.
-                if wasPlaying && !self.isAtEnd {
-                    self.scheduleAirPlayDropRecovery()
-                }
-            } else if reason == .newDeviceAvailable || self.isAirPlayActive {
-                // Prevent an old delayed fallback from playing on the phone
-                // after an AirPlay route has been restored.
-                self.multitaskPause.airPlayRecoveryGeneration += 1
+            && !isAirPlayActive
+
+        if reason == .oldDeviceUnavailable {
+            logPlaybackState("audio output disconnected")
+            // A removed headphone or Bluetooth receiver must never trigger
+            // unexpected playback from the phone speaker.
+            multitaskPause.lastUserPause = now
+        }
+        if routeLostAirPlay {
+            logPlaybackState("AirPlay route lost (reason=\(raw))")
+            // iOS sometimes reports a category/configuration change rather
+            // than oldDeviceUnavailable when the receiver drops. Don't
+            // ignore that case. This cannot force the TV to reconnect;
+            // only attempt local recovery after the interruption ends.
+            if wasPlaying && !isAtEnd {
+                scheduleAirPlayDropRecovery()
             }
+        } else if reason == .newDeviceAvailable || isAirPlayActive {
+            // Prevent an old delayed fallback from playing on the phone
+            // after an AirPlay route has been restored.
+            multitaskPause.airPlayRecoveryGeneration += 1
         }
     }
 

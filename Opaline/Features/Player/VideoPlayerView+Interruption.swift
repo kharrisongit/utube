@@ -45,38 +45,42 @@ extension VideoPlayerView {
         logPlaybackState("audio interruption \(type.rawValue)")
         switch type {
         case .began:
-            // The route can still read AirPlay when iOS interrupts a
-            // background session; external playback may vanish seconds later
-            // without an .ended notification (observed in the field).
-            let backgroundAirPlay = player.isExternalPlaybackActive
-                && UIApplication.shared.applicationState == .background
-            let routeMovedOffAirPlay = player.isExternalPlaybackActive
-                && !AVAudioSession.sharedInstance().currentRoute.outputs.contains {
-                    $0.portType == .airPlay
-                }
-            if backgroundAirPlay || routeMovedOffAirPlay {
-                interruption.interruptedAirPlayInBackground = true
-                interruption.airPlayDropUserPause = multitaskPause.lastUserPause
-                AppLog.player(
-                    "AirPlay interruption tracked: background=\(backgroundAirPlay)"
-                        + " routeMoved=\(routeMovedOffAirPlay)"
-                )
-            }
-            multitaskPause.systemPaused = false
-            // AVPlayer may already have changed rate to zero before this notification arrives.
-            let recentlyPlaying = CACurrentMediaTime() - interruption.lastPlayingAt < 1
-                && interruption.lastPlayingAt > multitaskPause.lastUserPause
-            interruption.state.begin(
-                wasPlaying: player.rate > 0 || recentlyPlaying,
-                lastUserPause: multitaskPause.lastUserPause
-            )
-            interruption.player = player
-            player.pause()
+            beginAudioInterruption(player: player)
         case .ended:
             resumeAfterInterruption(note, player: player)
         @unknown default:
             break
         }
+    }
+
+    private func beginAudioInterruption(player: AVPlayer) {
+        // The route can still read AirPlay when iOS interrupts a
+        // background session; external playback may vanish seconds later
+        // without an .ended notification (observed in the field).
+        let backgroundAirPlay = player.isExternalPlaybackActive
+            && UIApplication.shared.applicationState == .background
+        let routeMovedOffAirPlay = player.isExternalPlaybackActive
+            && !AVAudioSession.sharedInstance().currentRoute.outputs.contains {
+                $0.portType == .airPlay
+            }
+        if backgroundAirPlay || routeMovedOffAirPlay {
+            interruption.interruptedAirPlayInBackground = true
+            interruption.airPlayDropUserPause = multitaskPause.lastUserPause
+            AppLog.player(
+                "AirPlay interruption tracked: background=\(backgroundAirPlay)"
+                    + " routeMoved=\(routeMovedOffAirPlay)"
+            )
+        }
+        multitaskPause.systemPaused = false
+        // AVPlayer may already have changed rate to zero before this notification arrives.
+        let recentlyPlaying = CACurrentMediaTime() - interruption.lastPlayingAt < 1
+            && interruption.lastPlayingAt > multitaskPause.lastUserPause
+        interruption.state.begin(
+            wasPlaying: player.rate > 0 || recentlyPlaying,
+            lastUserPause: multitaskPause.lastUserPause
+        )
+        interruption.player = player
+        player.pause()
     }
 
     private func resumeAfterInterruption(_ note: Notification, player: AVPlayer) {
