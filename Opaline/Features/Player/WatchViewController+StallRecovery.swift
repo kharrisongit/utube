@@ -2,7 +2,7 @@ import AVFoundation
 import UIKit
 
 final class PlaybackStallWatch {
-    let network = PlaybackNetworkPath()
+    let network = PlaybackNetworkPath.shared
     weak var item: AVPlayerItem?
     var work: DispatchWorkItem?
     var didRetry = false

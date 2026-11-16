@@ -47,7 +47,9 @@ enum BackgroundPlaybackService {
             try AVAudioSession.sharedInstance().setActive(true)
             return true
         } catch {
-            AppLog.player("audio session activation failed: \((error as NSError).code)")
+            let failure = error as NSError
+            AppLog.player("audio session activation failed: domain=\(failure.domain)"
+                + " code=\(failure.code) message=\(failure.localizedDescription)")
             return false
         }
     }

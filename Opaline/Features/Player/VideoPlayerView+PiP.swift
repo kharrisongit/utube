@@ -64,6 +64,7 @@ extension VideoPlayerView {
     func replacePlayer(_ newPlayer: AVPlayer) {
         removePeriodicObserver()
         removePlayerObservers()
+        resetInterruptionTracking()
         player = newPlayer
         playerLayer.player = newPlayer
         pipController = nil
@@ -268,13 +269,27 @@ extension VideoPlayerView {
     func observeAirPlay(on player: AVPlayer) {
         airPlayObservation = player.observe(
             \.isExternalPlaybackActive, options: [.initial, .new]
-        ) { [weak self] _, _ in
-            DispatchQueue.main.async { self?.refreshAirPlayRoute() }
+        ) { [weak self] observed, change in
+            let external = change.newValue ?? observed.isExternalPlaybackActive
+            DispatchQueue.main.async {
+                guard let self, self.player === observed else {
+                    return
+                }
+                logPlaybackState("external playback changed: active=\(external)")
+                refreshAirPlayRoute()
+            }
         }
     }
 
     func refreshAirPlayRoute() {
+        if isAirPlayActive {
+            interruption.cancelPendingRecovery()
+            multitaskPause.airPlayRecoveryGeneration += 1
+        }
         setupPiP()
         onAirPlayRouteChange?()
+        if let player {
+            recoverBackgroundAirPlayIfNeeded(player: player)
+        }
     }
 }

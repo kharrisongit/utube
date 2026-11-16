@@ -1,6 +1,8 @@
 import Network
 
 final class PlaybackNetworkPath {
+    static let shared = PlaybackNetworkPath()
+
     private let monitor = NWPathMonitor()
     private var path: NWPath?
 
@@ -23,7 +25,14 @@ final class PlaybackNetworkPath {
 
     init() {
         monitor.pathUpdateHandler = { [weak self] path in
-            self?.path = path
+            guard let self else {
+                return
+            }
+            let previous = summary
+            self.path = path
+            if summary != previous {
+                AppLog.player("playback network changed: \(previous) -> \(summary)")
+            }
         }
         monitor.start(queue: .main)
     }

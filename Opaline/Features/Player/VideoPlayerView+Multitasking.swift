@@ -117,36 +117,48 @@ extension VideoPlayerView {
             // Prevent an old delayed fallback from playing on the phone
             // after an AirPlay route has been restored.
             multitaskPause.airPlayRecoveryGeneration += 1
+            interruption.cancelPendingRecovery()
         }
     }
 
     private func scheduleAirPlayDropRecovery() {
+        guard let player, let item = player.currentItem else {
+            return
+        }
         multitaskPause.airPlayRecoveryGeneration += 1
         let generation = multitaskPause.airPlayRecoveryGeneration
-        let playerAtDrop = player
         let pauseAtDrop = multitaskPause.lastUserPause
         AppLog.player("unexpected AirPlay disconnect: awaiting stable local route")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            guard let self, generation == self.multitaskPause.airPlayRecoveryGeneration,
-                  self.player === playerAtDrop, let player = self.player,
-                  player.currentItem?.status == .readyToPlay,
-                  !self.interruption.state.active,
-                  !self.isPiPActive, !self.isAtEnd,
-                  !self.isAirPlayActive,
-                  self.multitaskPause.lastUserPause == pauseAtDrop,
-                  UIApplication.shared.applicationState == .active else {
-                self?.logPlaybackState("AirPlay fallback deferred or cancelled")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            [weak self, weak player, weak item] in
+            guard let self, let player, let item else {
                 return
             }
-            // If the receiver did not reconnect, continue at the existing
-            // playhead locally rather than leaving the video stranded.
-            guard BackgroundPlaybackService.activate() else {
-                self.logPlaybackState("AirPlay fallback audio activation failed")
-                return
-            }
-            player.playImmediately(atRate: self.playbackSpeed)
-            self.logPlaybackState("AirPlay disconnected; resumed locally")
+            finishAirPlayDropRecovery(
+                player: player, item: item, generation: generation, pauseAtDrop: pauseAtDrop
+            )
         }
+    }
+
+    private func finishAirPlayDropRecovery(
+        player: AVPlayer, item: AVPlayerItem, generation: Int, pauseAtDrop: CFTimeInterval
+    ) {
+        guard generation == multitaskPause.airPlayRecoveryGeneration,
+              self.player === player, player.currentItem === item,
+              player.rate == 0, item.status == .readyToPlay, !interruption.state.active,
+              !isPiPActive, !isAtEnd, !isAirPlayActive,
+              multitaskPause.lastUserPause == pauseAtDrop,
+              UIApplication.shared.applicationState == .active,
+              !AVAudioSession.sharedInstance().isOtherAudioPlaying else {
+            logPlaybackState("AirPlay fallback deferred or cancelled")
+            return
+        }
+        guard BackgroundPlaybackService.activate() else {
+            logPlaybackState("AirPlay fallback audio activation failed")
+            return
+        }
+        player.playImmediately(atRate: playbackSpeed)
+        logPlaybackState("AirPlay disconnected; requested local resume")
     }
 
     private func resumeAfterSystemPause() {
