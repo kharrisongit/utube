@@ -129,7 +129,9 @@ extension VideoPlayerView {
         let generation = multitaskPause.airPlayRecoveryGeneration
         let pauseAtDrop = multitaskPause.lastUserPause
         AppLog.player("unexpected AirPlay disconnect: awaiting stable local route")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self, weak player, weak item] in
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 2.0
+        ) { [weak self, weak player, weak item] in
             guard let self, let player, let item else {
                 return
             }

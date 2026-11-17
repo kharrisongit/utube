@@ -32,7 +32,9 @@ extension VideoPlayerView {
         interruption.foregroundRecoveryScheduled = true
         let generation = interruption.generation
         AppLog.player("AirPlay session lost in background; checking foreground fallback")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self, weak player, weak item] in
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 1.0
+        ) { [weak self, weak player, weak item] in
             guard let self, let player, let item else {
                 return
             }
