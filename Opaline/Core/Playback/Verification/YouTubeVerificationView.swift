@@ -65,8 +65,6 @@ final class YouTubeVerificationView: UIViewController {
         }
     }
 
-    deinit { endTrace() }
-
     // Host only: never include URL paths, queries, cookies, codes or tokens.
     func trace(_ event: String, url: URL? = nil) {
         let host = url?.host?.lowercased() ?? "-"
@@ -200,4 +198,6 @@ final class YouTubeVerificationView: UIViewController {
         navigationItem.rightBarButtonItem?.isEnabled = true
         status.text = "verification.noSession".localized
     }
+
+    deinit { endTrace() }
 }
