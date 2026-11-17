@@ -27,6 +27,15 @@
       },
       "versions": [
         {
+          "version": "1.12.23",
+          "date": "2026-11-17T21:57:35Z",
+          "localizedDescription": "AirPlay interruption recovery and diagnostics\n\n- Keep interruption recovery tied to the video that was actually playing. Old callbacks cannot restart a different video or a video you had already paused.\n- Clear a stale interruption after playback successfully resumes, so a missing system interruption-ended event cannot keep later stall recovery disabled.\n- Record the system's interruption reason, suspension flag, audio-session state, and network-path changes in the debug log to distinguish route loss from other interruptions when iOS provides that information.\n\nThese changes improve recovery and diagnosis. They do not establish or guarantee a fix for the underlying Vizio AirPlay disconnection, and reconnecting the receiver may still require selecting it in AirPlay.",
+          "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.23/uTube_1.12.23.ipa",
+          "size": 11168939,
+          "minOSVersion": "12.0",
+          "buildVersion": "723"
+        },
+        {
           "version": "1.12.22",
           "date": "2026-11-17T02:11:32Z",
           "localizedDescription": "AirPlay interruption recovery and diagnostics\n\n- Keep interruption recovery tied to the video that was actually playing. Old callbacks cannot restart a different video or a video you had already paused.\n- Clear a stale interruption after playback successfully resumes, so a missing system interruption-ended event cannot keep later stall recovery disabled.\n- Record the system's interruption reason, suspension flag, audio-session state, and network-path changes in the debug log to distinguish route loss from other interruptions when iOS provides that information.\n\nThese changes improve recovery and diagnosis. They do not establish or guarantee a fix for the underlying Vizio AirPlay disconnection, and reconnecting the receiver may still require selecting it in AirPlay.",
@@ -162,11 +171,11 @@
           "buildVersion": "630"
         }
       ],
-      "version": "1.12.22",
-      "versionDate": "2026-11-17T02:11:32Z",
+      "version": "1.12.23",
+      "versionDate": "2026-11-17T21:57:35Z",
       "versionDescription": "AirPlay interruption recovery and diagnostics\n\n- Keep interruption recovery tied to the video that was actually playing. Old callbacks cannot restart a different video or a video you had already paused.\n- Clear a stale interruption after playback successfully resumes, so a missing system interruption-ended event cannot keep later stall recovery disabled.\n- Record the system's interruption reason, suspension flag, audio-session state, and network-path changes in the debug log to distinguish route loss from other interruptions when iOS provides that information.\n\nThese changes improve recovery and diagnosis. They do not establish or guarantee a fix for the underlying Vizio AirPlay disconnection, and reconnecting the receiver may still require selecting it in AirPlay.",
-      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.22/uTube_1.12.22.ipa",
-      "size": 11167004
+      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.23/uTube_1.12.23.ipa",
+      "size": 11168939
     },
     {
       "name": "The Last Dragonrider",
@@ -496,6 +505,15 @@
     }
   ],
   "news": [
+    {
+      "title": "uTube 1.12.23 — kharrison",
+      "identifier": "com.kharrison.utube.release-1.12.23",
+      "caption": "Keep interruption recovery tied to the video that was actually playing. Old callbacks cannot restart a different vide…",
+      "date": "2026-11-17T21:57:35Z",
+      "tintColor": "FF0000",
+      "appID": "com.kharrison.utube",
+      "url": "https://github.com/kharrisongit/utube/releases/tag/1.12.23"
+    },
     {
       "title": "uTube 1.12.22 — kharrison",
       "identifier": "com.kharrison.utube.release-1.12.22",
