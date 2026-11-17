@@ -23,9 +23,9 @@ extension VideoPlayerView {
                 guard let self, self.player === observed else {
                     return
                 }
-                noteSystemPause(rate: observed.rate)
-                if observed.rate > 0 { isAtEnd = false }
-                updatePlayPauseIcon()
+                self.noteSystemPause(rate: observed.rate)
+                if observed.rate > 0 { self.isAtEnd = false }
+                self.updatePlayPauseIcon()
             }
         }
     }

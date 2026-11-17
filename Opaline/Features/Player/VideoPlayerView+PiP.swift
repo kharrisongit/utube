@@ -275,8 +275,8 @@ extension VideoPlayerView {
                 guard let self, self.player === observed else {
                     return
                 }
-                logPlaybackState("external playback changed: active=\(external)")
-                refreshAirPlayRoute()
+                self.logPlaybackState("external playback changed: active=\(external)")
+                self.refreshAirPlayRoute()
             }
         }
     }
