@@ -27,6 +27,15 @@
       },
       "versions": [
         {
+          "version": "1.12.22",
+          "date": "2026-11-17T02:11:32Z",
+          "localizedDescription": "AirPlay interruption recovery and diagnostics\n\n- Keep interruption recovery tied to the video that was actually playing. Old callbacks cannot restart a different video or a video you had already paused.\n- Clear a stale interruption after playback successfully resumes, so a missing system interruption-ended event cannot keep later stall recovery disabled.\n- Record the system's interruption reason, suspension flag, audio-session state, and network-path changes in the debug log to distinguish route loss from other interruptions when iOS provides that information.\n\nThese changes improve recovery and diagnosis. They do not establish or guarantee a fix for the underlying Vizio AirPlay disconnection, and reconnecting the receiver may still require selecting it in AirPlay.",
+          "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.22/uTube_1.12.22.ipa",
+          "size": 11167004,
+          "minOSVersion": "12.0",
+          "buildVersion": "717"
+        },
+        {
           "version": "1.12.21",
           "date": "2026-11-15T21:26:37Z",
           "localizedDescription": "Playback waiting messages without Stats for Nerds\n\n- A short message now appears beneath the buffering spinner, even with Stats for Nerds off and playback controls hidden.\n- Shows the player’s known waiting state: buffering video, measuring download speed, loading the stream, or waiting for playback to resume. It does not guess at a network or AirPlay failure.\n- The message refreshes while waiting and clears on playback, pause, or a player change.\n\nAlso includes the recent SponsorBlock repeated-seek and AirPlay recovery fixes.",
@@ -153,11 +162,11 @@
           "buildVersion": "630"
         }
       ],
-      "version": "1.12.21",
-      "versionDate": "2026-11-15T21:26:37Z",
-      "versionDescription": "Playback waiting messages without Stats for Nerds\n\n- A short message now appears beneath the buffering spinner, even with Stats for Nerds off and playback controls hidden.\n- Shows the player’s known waiting state: buffering video, measuring download speed, loading the stream, or waiting for playback to resume. It does not guess at a network or AirPlay failure.\n- The message refreshes while waiting and clears on playback, pause, or a player change.\n\nAlso includes the recent SponsorBlock repeated-seek and AirPlay recovery fixes.",
-      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.21/uTube_1.12.21.ipa",
-      "size": 11161707
+      "version": "1.12.22",
+      "versionDate": "2026-11-17T02:11:32Z",
+      "versionDescription": "AirPlay interruption recovery and diagnostics\n\n- Keep interruption recovery tied to the video that was actually playing. Old callbacks cannot restart a different video or a video you had already paused.\n- Clear a stale interruption after playback successfully resumes, so a missing system interruption-ended event cannot keep later stall recovery disabled.\n- Record the system's interruption reason, suspension flag, audio-session state, and network-path changes in the debug log to distinguish route loss from other interruptions when iOS provides that information.\n\nThese changes improve recovery and diagnosis. They do not establish or guarantee a fix for the underlying Vizio AirPlay disconnection, and reconnecting the receiver may still require selecting it in AirPlay.",
+      "downloadURL": "https://github.com/kharrisongit/utube/releases/download/1.12.22/uTube_1.12.22.ipa",
+      "size": 11167004
     },
     {
       "name": "The Last Dragonrider",
@@ -487,6 +496,15 @@
     }
   ],
   "news": [
+    {
+      "title": "uTube 1.12.22 — kharrison",
+      "identifier": "com.kharrison.utube.release-1.12.22",
+      "caption": "Keep interruption recovery tied to the video that was actually playing. Old callbacks cannot restart a different vide…",
+      "date": "2026-11-17T02:11:32Z",
+      "tintColor": "FF0000",
+      "appID": "com.kharrison.utube",
+      "url": "https://github.com/kharrisongit/utube/releases/tag/1.12.22"
+    },
     {
       "title": "uTube 1.12.21 — kharrison",
       "identifier": "com.kharrison.utube.release-1.12.21",
