@@ -34,6 +34,37 @@ final class YouTubeVerificationView: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        title = "verification.title".localized
+        webView.navigationDelegate = self
+        webView.uiDelegate = self
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "common.cancel".localized, style: .plain, target: self, action: #selector(close)
+        )
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "verification.retry".localized,
+            style: .done,
+            target: self,
+            action: #selector(useSession)
+        )
+        navigationItem.rightBarButtonItem?.isEnabled = false
+        setupLayout()
+        beginTrace()
+        if let url = VerificationURLPolicy.page(videoID: videoID) {
+            webView.load(URLRequest(url: url))
+        }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if navigationController?.isBeingDismissed == true || isBeingDismissed {
+            trace("dismissed", url: webView.url)
+            endTrace()
+            webView.stopLoading()
+        }
+    }
+
     deinit { endTrace() }
 
     // Host only: never include URL paths, queries, cookies, codes or tokens.
@@ -77,37 +108,6 @@ final class YouTubeVerificationView: UIViewController {
         traceTimer = nil
         progressObservation?.invalidate()
         progressObservation = nil
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        title = "verification.title".localized
-        webView.navigationDelegate = self
-        webView.uiDelegate = self
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: "common.cancel".localized, style: .plain, target: self, action: #selector(close)
-        )
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "verification.retry".localized,
-            style: .done,
-            target: self,
-            action: #selector(useSession)
-        )
-        navigationItem.rightBarButtonItem?.isEnabled = false
-        setupLayout()
-        beginTrace()
-        if let url = VerificationURLPolicy.page(videoID: videoID) {
-            webView.load(URLRequest(url: url))
-        }
-    }
-
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        if navigationController?.isBeingDismissed == true || isBeingDismissed {
-            trace("dismissed", url: webView.url)
-            endTrace()
-            webView.stopLoading()
-        }
     }
 
     private func setupLayout() {
