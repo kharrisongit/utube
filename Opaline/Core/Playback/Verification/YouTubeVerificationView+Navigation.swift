@@ -11,7 +11,10 @@ extension YouTubeVerificationView: WKNavigationDelegate, WKUIDelegate {
             return
         }
         let allowed = VerificationURLPolicy.allowsNavigation(navigationAction.request.url)
-        trace(allowed ? "navigation allowed" : "navigation blocked", url: navigationAction.request.url)
+        trace(
+            allowed ? "navigation allowed" : "navigation blocked",
+            url: navigationAction.request.url
+        )
         decisionHandler(allowed ? .allow : .cancel)
     }
 
@@ -33,7 +36,10 @@ extension YouTubeVerificationView: WKNavigationDelegate, WKUIDelegate {
         didFailProvisionalNavigation navigation: WKNavigation?,
         withError error: Error
     ) {
-        trace("provisional error domain=\((error as NSError).domain) code=\((error as NSError).code)", url: webView.url)
+        trace(
+            "provisional error domain=\((error as NSError).domain) code=\((error as NSError).code)",
+            url: webView.url
+        )
         status.text = "verification.loadFailed".localized
         navigationItem.rightBarButtonItem?.isEnabled = VerificationURLPolicy.isYouTube(webView.url)
     }
@@ -53,12 +59,16 @@ extension YouTubeVerificationView: WKNavigationDelegate, WKUIDelegate {
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation?, withError error: Error) {
-        trace("navigation error domain=\((error as NSError).domain) code=\((error as NSError).code)", url: webView.url)
+        trace(
+            "navigation error domain=\((error as NSError).domain) code=\((error as NSError).code)",
+            url: webView.url
+        )
         status.text = "verification.loadFailed".localized
     }
 
     func webView(
-        _ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse,
+        _ webView: WKWebView,
+        decidePolicyFor navigationResponse: WKNavigationResponse,
         decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
     ) {
         if let response = navigationResponse.response as? HTTPURLResponse {

@@ -484,7 +484,10 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
             InnertubeSession.invalidateVisitorIdentity(reason: "manual reset")
             AppLog.innertube("visitor identity reset by hand")
             tableView.reloadData()
-            ToastView.show("Visitor identity reset. YouTube may still require verification.", in: view)
+            ToastView.show(
+                "Visitor identity reset. YouTube may still require verification.",
+                in: view
+            )
         default:
             return false
         }

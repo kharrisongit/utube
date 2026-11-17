@@ -14,43 +14,6 @@ final class YouTubeVerificationView: UIViewController {
     private var lastProgressBucket = -1
     private var progressObservation: NSKeyValueObservation?
 
-    // Host only: never include URL paths, queries, cookies, codes or tokens.
-    func trace(_ event: String, url: URL? = nil) {
-        let host = url?.host?.lowercased() ?? "-"
-        let elapsed = Int(Date().timeIntervalSince(traceStarted))
-        AppLog.player("verification[\(traceID)] +\(elapsed)s \(event) host=\(host)")
-    }
-
-    private func beginTrace() {
-        traceStarted = Date()
-        trace("opened")
-        progressObservation = webView.observe(\.estimatedProgress, options: [.new]) {
-            [weak self] observed, _ in
-            guard let self else { return }
-            let bucket = Int(observed.estimatedProgress * 10)
-            guard bucket != self.lastProgressBucket else { return }
-            self.lastProgressBucket = bucket
-            self.trace("progress=\(bucket * 10)%", url: observed.url)
-        }
-        traceTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
-            guard let self, self.view.window != nil else { return }
-            self.trace(
-                "checkpoint loading=\(self.webView.isLoading)"
-                    + " progress=\(Int(self.webView.estimatedProgress * 100))%"
-                    + " busy=\(self.busy)",
-                url: self.webView.url
-            )
-        }
-    }
-
-    private func endTrace() {
-        traceTimer?.invalidate()
-        traceTimer = nil
-        progressObservation?.invalidate()
-        progressObservation = nil
-    }
-
-    deinit { endTrace() }
     private let videoID: String?
     private let retry: () -> Void
 
@@ -69,6 +32,51 @@ final class YouTubeVerificationView: UIViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit { endTrace() }
+
+    // Host only: never include URL paths, queries, cookies, codes or tokens.
+    func trace(_ event: String, url: URL? = nil) {
+        let host = url?.host?.lowercased() ?? "-"
+        let elapsed = Int(Date().timeIntervalSince(traceStarted))
+        AppLog.player("verification[\(traceID)] +\(elapsed)s \(event) host=\(host)")
+    }
+
+    private func beginTrace() {
+        traceStarted = Date()
+        trace("opened")
+        progressObservation = webView.observe(
+            \.estimatedProgress, options: [.new]
+        ) { [weak self] observed, _ in
+            guard let self else {
+                return
+            }
+            let bucket = Int(observed.estimatedProgress * 10)
+            guard bucket != self.lastProgressBucket else {
+                return
+            }
+            self.lastProgressBucket = bucket
+            self.trace("progress=\(bucket * 10)%", url: observed.url)
+        }
+        traceTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+            guard let self, self.view.window != nil else {
+                return
+            }
+            self.trace(
+                "checkpoint loading=\(self.webView.isLoading)"
+                    + " progress=\(Int(self.webView.estimatedProgress * 100))%"
+                    + " busy=\(self.busy)",
+                url: self.webView.url
+            )
+        }
+    }
+
+    private func endTrace() {
+        traceTimer?.invalidate()
+        traceTimer = nil
+        progressObservation?.invalidate()
+        progressObservation = nil
     }
 
     override func viewDidLoad() {
@@ -152,7 +160,10 @@ final class YouTubeVerificationView: UIViewController {
             guard let self, navigationGeneration == expected else {
                 return
             }
-            self.trace("visitor available=\((value as? String)?.isEmpty == false)", url: self.webView.url)
+            self.trace(
+                "visitor available=\((value as? String)?.isEmpty == false)",
+                url: self.webView.url
+            )
             guard let visitor = value as? String, !visitor.isEmpty else {
                 importFailed()
                 return
