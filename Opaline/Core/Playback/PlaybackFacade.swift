@@ -40,7 +40,6 @@ enum PlaybackBufferPolicy {
 final class PlaybackFacade {
     /// Recoveries closer together than this are one failing streak; a lone
     /// one hours later (URL expiry) starts the ladder over.
-    private static let recoveryStreakWindow: TimeInterval = 60
     var resolveGeneration = 0
     var resolveToken = CancellationToken()
     var loadCancellation: CancellationToken?
@@ -190,10 +189,7 @@ extension PlaybackFacade {
             return false
         }
         prepareRecovery(cancellation: cancellationToken, tokenRejected: tokenRejected)
-        if let last = lastRecoveryAt,
-           Date().timeIntervalSince(last) > Self.recoveryStreakWindow {
-            recoveryAttempts = 0
-        }
+        // A stalled stream does not regain retry attempts merely by waiting.
         lastRecoveryAt = Date()
         recoveryAttempts += 1
         guard recoveryAttempts <= 2 else {

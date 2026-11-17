@@ -8,6 +8,49 @@ final class YouTubeVerificationView: UIViewController {
     let status = UILabel()
     var busy = false
     var navigationGeneration = 0
+    private var traceTimer: Timer?
+    private var traceStarted = Date()
+    private let traceID = String(UUID().uuidString.prefix(8))
+    private var lastProgressBucket = -1
+    private var progressObservation: NSKeyValueObservation?
+
+    // Host only: never include URL paths, queries, cookies, codes or tokens.
+    func trace(_ event: String, url: URL? = nil) {
+        let host = url?.host?.lowercased() ?? "-"
+        let elapsed = Int(Date().timeIntervalSince(traceStarted))
+        AppLog.player("verification[\(traceID)] +\(elapsed)s \(event) host=\(host)")
+    }
+
+    private func beginTrace() {
+        traceStarted = Date()
+        trace("opened")
+        progressObservation = webView.observe(\.estimatedProgress, options: [.new]) {
+            [weak self] observed, _ in
+            guard let self else { return }
+            let bucket = Int(observed.estimatedProgress * 10)
+            guard bucket != self.lastProgressBucket else { return }
+            self.lastProgressBucket = bucket
+            self.trace("progress=\(bucket * 10)%", url: observed.url)
+        }
+        traceTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
+            guard let self, self.view.window != nil else { return }
+            self.trace(
+                "checkpoint loading=\(self.webView.isLoading)"
+                    + " progress=\(Int(self.webView.estimatedProgress * 100))%"
+                    + " busy=\(self.busy)",
+                url: self.webView.url
+            )
+        }
+    }
+
+    private func endTrace() {
+        traceTimer?.invalidate()
+        traceTimer = nil
+        progressObservation?.invalidate()
+        progressObservation = nil
+    }
+
+    deinit { endTrace() }
     private let videoID: String?
     private let retry: () -> Void
 
@@ -44,6 +87,7 @@ final class YouTubeVerificationView: UIViewController {
         )
         navigationItem.rightBarButtonItem?.isEnabled = false
         setupLayout()
+        beginTrace()
         if let url = VerificationURLPolicy.page(videoID: videoID) {
             webView.load(URLRequest(url: url))
         }
@@ -52,6 +96,8 @@ final class YouTubeVerificationView: UIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         if navigationController?.isBeingDismissed == true || isBeingDismissed {
+            trace("dismissed", url: webView.url)
+            endTrace()
             webView.stopLoading()
         }
     }
@@ -80,13 +126,21 @@ final class YouTubeVerificationView: UIViewController {
 
     @objc
     private func close() {
+        trace("cancel tapped", url: webView.url)
+        endTrace()
         webView.stopLoading()
         dismiss(animated: true)
     }
 
     @objc
     private func useSession() {
+        trace(
+            "retry tapped loading=\(webView.isLoading) busy=\(busy)"
+                + " onYouTube=\(VerificationURLPolicy.isYouTube(webView.url))",
+            url: webView.url
+        )
         guard !busy, !webView.isLoading, VerificationURLPolicy.isYouTube(webView.url) else {
+            trace("retry rejected by state", url: webView.url)
             return
         }
         busy = true
@@ -98,6 +152,7 @@ final class YouTubeVerificationView: UIViewController {
             guard let self, navigationGeneration == expected else {
                 return
             }
+            self.trace("visitor available=\((value as? String)?.isEmpty == false)", url: self.webView.url)
             guard let visitor = value as? String, !visitor.isEmpty else {
                 importFailed()
                 return
@@ -113,12 +168,15 @@ final class YouTubeVerificationView: UIViewController {
                   !webView.isLoading, VerificationURLPolicy.isYouTube(webView.url) else {
                       return
                   }
+            trace("cookie count=\(cookies.count)", url: webView.url)
             guard VisitorIdentityStore.shared.adopt(
                 visitor: visitor, browserCookies: cookies
             ) else {
                 importFailed()
                 return
             }
+            trace("visitor imported; native result pending", url: webView.url)
+            endTrace()
             AppLog.player("verification: imported anonymous visitor state; native result pending")
             webView.stopLoading()
             dismiss(animated: true, completion: retry)
@@ -126,6 +184,7 @@ final class YouTubeVerificationView: UIViewController {
     }
 
     private func importFailed() {
+        trace("visitor import failed", url: webView.url)
         busy = false
         navigationItem.rightBarButtonItem?.isEnabled = true
         status.text = "verification.noSession".localized

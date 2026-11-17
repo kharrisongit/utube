@@ -13,7 +13,7 @@ enum VerificationURLPolicy {
             return false
         }
         return isYouTube(url) || [
-            "accounts.google.com", "consent.youtube.com", "consent.google.com",
+            "accounts.google.com", "accounts.youtube.com", "consent.youtube.com", "consent.google.com",
             "www.google.com", "google.com"
         ].contains(url.host ?? "")
     }
